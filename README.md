@@ -284,6 +284,59 @@ curl http://localhost:8080/api/v1/funds
 
 ---
 
+### `GET /api/v1/funds/chooser`
+Returns fund metrics shaped specifically for the fund chooser page.
+
+Each metric embeds its own `label` and `description` alongside the value — the micro frontend can render every card without cross-referencing a separate `metricDescriptions` map, knowing which return period to display, or hardcoding any display strings client-side. Only the 5-year return is included; all other periods are omitted.
+
+Supports the same `ETag` / `304` caching semantics as `GET /api/v1/funds`.
+
+```bash
+curl http://localhost:8080/api/v1/funds/chooser
+```
+
+Example response:
+```json
+{
+  "disclaimer": "Past performance is not a reliable indication of future performance.",
+  "performanceAsOf": "2025-03-31",
+  "funds": [
+    {
+      "id": "growth",
+      "name": "Growth Fund",
+      "fee": {
+        "value": 0.85,
+        "unit": "%",
+        "label": "Fee",
+        "description": "85c per $100 of your balance per year"
+      },
+      "estimatedReturn": {
+        "value": 6.33,
+        "unit": "%",
+        "period": "5years",
+        "label": "Return",
+        "description": "Estimated average annual return over 5 years"
+      },
+      "minInvestmentTimeframe": {
+        "value": 10,
+        "unit": "years",
+        "label": "Time",
+        "description": "Recommended min. investment time"
+      },
+      "riskIndicator": {
+        "value": 4,
+        "scaleMin": 1,
+        "scaleMax": 7,
+        "label": "Risk",
+        "description": "How much the fund goes up and down"
+      }
+    }
+  ]
+}
+```
+
+---
+
 ### `GET /api/v1/funds/history`
 Returns all embedded config versions in ascending `effectiveFrom` order. Use this to confirm a new config file was picked up correctly after a deploy.
 
@@ -360,7 +413,7 @@ curl http://localhost:8080/actuator/info
 | Test class | What it covers |
 |---|---|
 | `FundConfigServiceTest` | Both config files load; v1 active before 2025-04-01; v2 active on/after 2025-04-01; `forceActivateVersion` switches correctly; unknown version returns false |
-| `FundControllerTest` | All four endpoints; ETag returns correct version string; `304` when ETag matches; `200` when ETag differs (new version activated); error cases |
+| `FundControllerTest` | All five endpoints (including `/chooser`); ETag returns correct version string; `304` when ETag matches; `200` when ETag differs (new version activated); error cases |
 
 ---
 
