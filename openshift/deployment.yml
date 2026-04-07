@@ -1,0 +1,98 @@
+---
+# Deployment for fund-metrics-api on OpenShift.
+#
+# QUARTERLY UPDATE WORKFLOW (fund manager + ops):
+#
+#   1. Add funds-config-v3.json to src/main/resources/fund-configs/
+#      Set effectiveFrom to the activation date, e.g. "2025-07-01".
+#      This can be committed WEEKS before the activation date.
+#
+#   2. Pipeline runs automatically on merge to main:
+#        mvn package → docker build → push to image registry → oc rollout
+#      The new JAR contains both old and new config files.
+#      The old version stays active — effectiveFrom has not arrived yet.
+#
+#   3. At midnight on 1 July, the built-in scheduler automatically activates v3.
+#      Zero additional work required from anyone.
+#
+# ROLLBACK (without redeployment):
+#   oc exec <pod> -- curl -X POST "localhost:8080/api/v1/funds/activate?version=2.0.0"
+#   — or via the Swagger UI in-cluster. Resets on next restart.
+#
+# FORCE IMMEDIATE ACTIVATION (after a same-day deploy):
+#   oc rollout restart deployment/fund-metrics-api
+#   Rolling restart (~30s), zero downtime.
+#
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fund-metrics-api
+  namespace: investments-api
+  labels:
+    app: fund-metrics-api
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: fund-metrics-api
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0   # never take a pod down before the replacement is healthy
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: fund-metrics-api
+    spec:
+      containers:
+        - name: fund-metrics-api
+          image: image-registry.openshift-image-registry.svc:5000/investments-api/fund-metrics-api:latest
+          ports:
+            - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 40
+            periodSeconds: 30
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fund-metrics-api
+  namespace: investments-api
+spec:
+  selector:
+    app: fund-metrics-api
+  ports:
+    - port: 80
+      targetPort: 8080
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: fund-metrics-api
+  namespace: investments-api
+spec:
+  to:
+    kind: Service
+    name: fund-metrics-api
+  port:
+    targetPort: 8080
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect

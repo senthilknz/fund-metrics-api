@@ -1,0 +1,61 @@
+package com.fundmetrics.api.model;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Data;
+
+import java.time.Instant;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * Top-level wrapper representing a single versioned fund config file.
+ *
+ * <p>Each config file under {@code src/main/resources/fund-configs/} maps to one instance.
+ * The {@link #effectiveFrom} date determines when this version becomes the active config.
+ */
+@Schema(description = "Versioned fund configuration snapshot, including metadata and the full list of funds")
+@Data
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class FundConfig {
+
+    /** Semantic version of this config file (e.g. {@code 1.0.0}, {@code 2.0.0}). */
+    @Schema(description = "Semantic version of this config", example = "2.0.0")
+    private String version;
+
+    /**
+     * The date from which this config becomes active. The scheduler evaluates this
+     * nightly to determine the current live version.
+     */
+    @Schema(description = "Date from which this config version becomes active", example = "2025-04-01")
+    private LocalDate effectiveFrom;
+
+    /** ISO-8601 timestamp of when this config file was published. */
+    @Schema(description = "ISO-8601 timestamp of when this config was published", example = "2025-04-01T00:00:00Z")
+    private Instant publishedAt;
+
+    /** The last date for which performance figures in this config are valid. */
+    @Schema(description = "Date up to which fund performance figures are calculated", example = "2025-03-31")
+    private String performanceAsOf;
+
+    /** Human-readable label for the originating data source. */
+    @Schema(description = "Name of the data source for fund metrics", example = "Active Series")
+    private String dataSource;
+
+    /** Legal disclaimer to be displayed alongside fund data. */
+    @Schema(description = "Legal disclaimer shown with fund performance data",
+            example = "Past performance is not a reliable indication of future performance.")
+    private String disclaimer;
+
+    /**
+     * Descriptions for each metric type (fee, returns, riskIndicator, etc.).
+     * Keyed by the metric name so the micro frontend can render labels and tooltips dynamically.
+     */
+    @Schema(description = "Descriptions and metadata for each metric type, keyed by metric name")
+    private Map<String, MetricDescription> metricDescriptions;
+
+    /** The ordered list of funds included in this config. */
+    @Schema(description = "List of funds with their metrics for this config version")
+    private List<Fund> funds;
+}
