@@ -146,36 +146,21 @@ public class FundController {
             summary = "Get fund chooser page data",
             description = "Returns fund metrics shaped for the fund chooser UI — each metric embeds its own " +
                           "label and description so the frontend requires no client-side joins. " +
-                          "Only the 5-year return is included. Supports ETag/304 caching."
+                          "Always returns the latest active config. Only the 5-year return is included."
     )
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Chooser data returned",
                     content = @Content(schema = @Schema(implementation = FundChooserResponse.class))),
-            @ApiResponse(responseCode = "304", description = "Data unchanged — client cache still valid",
-                    content = @Content),
             @ApiResponse(responseCode = "503", description = "No active fund config available",
                     content = @Content)
     })
     @GetMapping("/chooser")
-    public ResponseEntity<FundChooserResponse> getChooser(WebRequest webRequest) {
-        FundConfig config = fundConfigService.getActiveConfig();
-        if (config == null) {
+    public FundChooserResponse getChooser() {
+        FundChooserResponse body = fundConfigService.toChooserResponse();
+        if (body == null) {
             throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "No active fund config available");
         }
-
-        String eTag = "\"" + config.getVersion() + "\"";
-        long lastModifiedEpochMs = config.getPublishedAt().toEpochMilli();
-
-        if (webRequest.checkNotModified(eTag, lastModifiedEpochMs)) {
-            return ResponseEntity.status(HttpStatus.NOT_MODIFIED).build();
-        }
-
-        FundChooserResponse body = fundConfigService.toChooserResponse();
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CACHE_CONTROL, "no-cache, must-revalidate")
-                .eTag(eTag)
-                .lastModified(config.getPublishedAt())
-                .body(body);
+        return body;
     }
 
     /**
