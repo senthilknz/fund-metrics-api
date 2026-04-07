@@ -11,6 +11,7 @@ A Spring Boot REST API that serves Active Series managed fund metric data to a m
 - [Adding a New Quarterly Config — End-to-End Workflow](#adding-a-new-quarterly-config--end-to-end-workflow)
 - [Verification Checklist](#verification-checklist)
 - [Rollback Options](#rollback-options)
+- [API Design — Config vs Chooser Response](#api-design--config-vs-chooser-response)
 - [API Endpoints](#api-endpoints)
 - [Swagger UI](#swagger-ui)
 - [Request / Response Logging](#request--response-logging)
@@ -268,6 +269,32 @@ git commit -m "fix: remove malformed v3 config"
 git push
 # Raise emergency CR → deploy via Spinnaker
 ```
+
+---
+
+## API Design — Config vs Chooser Response
+
+The config files and the `/chooser` response are intentionally shaped differently. This separation is best practice and follows the **BFF (Backend For Frontend)** pattern.
+
+```
+funds-config-v2.json                      ← raw data, complete, no UI concerns
+        ↓
+FundConfigService.toChooserResponse()     ← mapping layer
+        ↓
+GET /api/v1/funds/chooser                 ← view model shaped for the fund chooser UI
+```
+
+| Layer | Purpose |
+|-------|---------|
+| Config JSON | Source of truth — all return periods, full metric descriptions, version metadata |
+| `/chooser` response | View model — only what the chooser page needs, labels and descriptions co-located with values |
+
+**Why not align the config to the chooser response shape?**
+
+- The config serves multiple endpoints (`/funds`, `/history`, `/preview`) — shaping it for one UI would break the others
+- The config holds all 6 return periods; `/chooser` intentionally exposes only the 5-year figure
+- Display strings ("Fee", "Return", "Time", "Risk") are presentation concerns — they belong in the mapping layer, not the data layer
+- Future UIs (mobile app, adviser portal) may need different shapes — a new mapping method handles that without touching the config
 
 ---
 
