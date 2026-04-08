@@ -2,6 +2,7 @@ package com.fundmetrics.api;
 
 import com.fundmetrics.api.controller.FundController;
 import com.fundmetrics.api.model.*;
+import com.fundmetrics.api.model.ReturnPeriod;
 import com.fundmetrics.api.service.FundConfigService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -69,7 +70,7 @@ class FundControllerTest {
         fee.setAnnualFundCharge(0.85);
         fee.setUnit("%");
         growth.setFee(fee);
-        growth.setReturns(Map.of("1year", growth1yr, "3years", 13.50));
+        growth.setReturns(Map.of(ReturnPeriod.ONE_YEAR, growth1yr, ReturnPeriod.THREE_YEARS, 13.50));
         InvestmentTimeframe timeframe = new InvestmentTimeframe();
         timeframe.setValue(7);
         timeframe.setUnit("years");

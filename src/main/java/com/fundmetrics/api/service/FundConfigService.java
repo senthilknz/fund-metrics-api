@@ -2,6 +2,7 @@ package com.fundmetrics.api.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fundmetrics.api.model.FundConfig;
+import com.fundmetrics.api.model.ReturnPeriod;
 import com.fundmetrics.api.model.chooser.FundChooserItem;
 import com.fundmetrics.api.model.chooser.FundChooserItem.FeeDisplay;
 import com.fundmetrics.api.model.chooser.FundChooserItem.ReturnDisplay;
@@ -201,10 +202,10 @@ public class FundConfigService {
                             .description(centsPerHundred + "c per $100 of your balance per year")
                             .build())
                     .estimatedReturn(ReturnDisplay.builder()
-                            .value(fund.getReturns().getOrDefault("5years", 0.0))
+                            .value(fund.getReturns().getOrDefault(ReturnPeriod.FIVE_YEARS, 0.0))
                             .unit("%")
-                            .periodValue(5)
-                            .periodUnit("years")
+                            .periodValue(ReturnPeriod.FIVE_YEARS.getPeriodValue())
+                            .periodUnit(ReturnPeriod.FIVE_YEARS.getPeriodUnit())
                             .label("Return")
                             .description("Estimated average annual return over 5 years")
                             .build())

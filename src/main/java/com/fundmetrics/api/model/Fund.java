@@ -40,9 +40,8 @@ public class Fund {
      * {@code 3years}, {@code 5years}, {@code 10years}.
      * Periods of 3 years and longer are average annual returns.
      */
-    @Schema(description = "Percentage returns keyed by period (e.g. '1year', '3years'). " +
-                          "Values for 3 years and longer are average annual returns.")
-    private Map<String, Double> returns;
+    @Schema(description = "Percentage returns keyed by period. Values for 3 years and longer are average annual returns.")
+    private Map<ReturnPeriod, Double> returns;
 
     /** Recommended minimum period to stay invested to ride out volatility. */
     @Schema(description = "Recommended minimum investment timeframe to achieve the fund's objective")

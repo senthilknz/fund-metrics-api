@@ -1,6 +1,7 @@
 package com.fundmetrics.api;
 
 import com.fundmetrics.api.model.FundConfig;
+import com.fundmetrics.api.model.ReturnPeriod;
 import com.fundmetrics.api.service.FundConfigService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -100,10 +101,10 @@ class FundConfigServiceTest {
         FundConfig v2 = fundConfigService.getHistory().get(1);
         double v1Growth1yr = v1.getFunds().stream()
                 .filter(f -> "growth".equals(f.getId())).findFirst().orElseThrow()
-                .getReturns().get("1year");
+                .getReturns().get(ReturnPeriod.ONE_YEAR);
         double v2Growth1yr = v2.getFunds().stream()
                 .filter(f -> "growth".equals(f.getId())).findFirst().orElseThrow()
-                .getReturns().get("1year");
+                .getReturns().get(ReturnPeriod.ONE_YEAR);
         assertThat(v1Growth1yr).isNotEqualTo(v2Growth1yr);
     }
 }

@@ -5,6 +5,10 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.util.List;
+import com.fundmetrics.api.model.ReturnPeriod;
+
+// Note: ReturnPeriod is imported for the periods field — the enum's @JsonValue/@JsonCreator
+// handles serialisation/deserialisation of period strings transparently.
 
 /**
  * Human-readable metadata for a metric type (fee, returns, riskIndicator, etc.).
@@ -43,8 +47,7 @@ public class MetricDescription {
      * Ordered list of return period labels for the {@code returns} metric.
      * Only present for the returns metric type (e.g. {@code ["3months","1year","5years"]}).
      */
-    @Schema(description = "Ordered return period labels — only present for the returns metric",
-            example = "[\"3months\",\"6months\",\"1year\",\"3years\",\"5years\",\"10years\"]",
+    @Schema(description = "Ordered return periods — only present for the returns metric",
             nullable = true)
-    private List<String> periods;
+    private List<ReturnPeriod> periods;
 }
