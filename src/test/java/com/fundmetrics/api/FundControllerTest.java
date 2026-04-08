@@ -2,7 +2,8 @@ package com.fundmetrics.api;
 
 import com.fundmetrics.api.controller.FundController;
 import com.fundmetrics.api.model.*;
-import com.fundmetrics.api.model.ReturnPeriod;
+import com.fundmetrics.api.model.chooser.FundChooserItem;
+import com.fundmetrics.api.model.chooser.FundChooserResponse;
 import com.fundmetrics.api.service.FundConfigService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -143,6 +144,78 @@ class FundControllerTest {
         when(fundConfigService.getActiveConfig()).thenReturn(null);
 
         mockMvc.perform(get("/api/v1/funds").accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isServiceUnavailable());
+    }
+
+    // -------------------------------------------------------------------------
+    // GET /api/v1/funds/chooser
+    // -------------------------------------------------------------------------
+
+    private FundChooserResponse buildChooserResponse() {
+        return FundChooserResponse.builder()
+                .disclaimer("Past performance is not a reliable indication of future performance.")
+                .performanceAsOf("2025-03-31")
+                .funds(List.of(
+                        FundChooserItem.builder()
+                                .id("growth").name("Growth Fund")
+                                .fee(FundChooserItem.FeeDisplay.builder()
+                                        .value(0.85).unit("%").label("Fee")
+                                        .description("85c per $100 of your balance per year").build())
+                                .estimatedReturn(FundChooserItem.ReturnDisplay.builder()
+                                        .value(6.33).unit("%").periodValue(5).periodUnit("years")
+                                        .label("Return")
+                                        .description("Estimated average annual return over 5 years").build())
+                                .minInvestmentTimeframe(FundChooserItem.TimeframeDisplay.builder()
+                                        .value(10).unit("years").label("Time")
+                                        .description("Recommended min. investment time").build())
+                                .riskIndicator(FundChooserItem.RiskDisplay.builder()
+                                        .value(4).scaleMin(1).scaleMax(7).label("Risk")
+                                        .description("How much the fund goes up and down").build())
+                                .build()
+                ))
+                .build();
+    }
+
+    @Test
+    void getChooser_returns200WithFundData() throws Exception {
+        when(fundConfigService.toChooserResponse()).thenReturn(buildChooserResponse());
+
+        mockMvc.perform(get("/api/v1/funds/chooser").accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.disclaimer").isNotEmpty())
+                .andExpect(jsonPath("$.performanceAsOf").value("2025-03-31"))
+                .andExpect(jsonPath("$.funds", hasSize(1)))
+                .andExpect(jsonPath("$.funds[0].id").value("growth"))
+                .andExpect(jsonPath("$.funds[0].name").value("Growth Fund"))
+                .andExpect(jsonPath("$.funds[0].fee.value").value(0.85))
+                .andExpect(jsonPath("$.funds[0].fee.unit").value("%"))
+                .andExpect(jsonPath("$.funds[0].fee.label").value("Fee"))
+                .andExpect(jsonPath("$.funds[0].fee.description").value("85c per $100 of your balance per year"))
+                .andExpect(jsonPath("$.funds[0].estimatedReturn.value").value(6.33))
+                .andExpect(jsonPath("$.funds[0].estimatedReturn.unit").value("%"))
+                .andExpect(jsonPath("$.funds[0].estimatedReturn.periodValue").value(5))
+                .andExpect(jsonPath("$.funds[0].estimatedReturn.periodUnit").value("years"))
+                .andExpect(jsonPath("$.funds[0].estimatedReturn.label").value("Return"))
+                .andExpect(jsonPath("$.funds[0].estimatedReturn.description")
+                        .value("Estimated average annual return over 5 years"))
+                .andExpect(jsonPath("$.funds[0].minInvestmentTimeframe.value").value(10))
+                .andExpect(jsonPath("$.funds[0].minInvestmentTimeframe.unit").value("years"))
+                .andExpect(jsonPath("$.funds[0].minInvestmentTimeframe.label").value("Time"))
+                .andExpect(jsonPath("$.funds[0].minInvestmentTimeframe.description")
+                        .value("Recommended min. investment time"))
+                .andExpect(jsonPath("$.funds[0].riskIndicator.value").value(4))
+                .andExpect(jsonPath("$.funds[0].riskIndicator.scaleMin").value(1))
+                .andExpect(jsonPath("$.funds[0].riskIndicator.scaleMax").value(7))
+                .andExpect(jsonPath("$.funds[0].riskIndicator.label").value("Risk"))
+                .andExpect(jsonPath("$.funds[0].riskIndicator.description")
+                        .value("How much the fund goes up and down"));
+    }
+
+    @Test
+    void getChooser_returns503WhenNoActiveConfig() throws Exception {
+        when(fundConfigService.toChooserResponse()).thenReturn(null);
+
+        mockMvc.perform(get("/api/v1/funds/chooser").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isServiceUnavailable());
     }
 

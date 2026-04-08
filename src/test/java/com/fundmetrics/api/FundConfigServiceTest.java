@@ -2,10 +2,14 @@ package com.fundmetrics.api;
 
 import com.fundmetrics.api.model.FundConfig;
 import com.fundmetrics.api.model.ReturnPeriod;
+import com.fundmetrics.api.model.chooser.FundChooserItem;
+import com.fundmetrics.api.model.chooser.FundChooserResponse;
 import com.fundmetrics.api.service.FundConfigService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -17,6 +21,11 @@ class FundConfigServiceTest {
 
     @Autowired
     private FundConfigService fundConfigService;
+
+    @BeforeEach
+    void ensureV2IsActive() {
+        fundConfigService.forceActivateVersion("2.0.0");
+    }
 
     @Test
     void bothConfigFilesLoad() {
@@ -94,6 +103,175 @@ class FundConfigServiceTest {
                 })
         );
     }
+
+    // -------------------------------------------------------------------------
+    // toChooserResponse()
+    // -------------------------------------------------------------------------
+
+    @Test
+    void toChooserResponse_returnsNullWhenActiveConfigIsNull() {
+        ReflectionTestUtils.setField(fundConfigService, "activeConfig", null);
+        assertThat(fundConfigService.toChooserResponse()).isNull();
+    }
+
+    @Test
+    void toChooserResponse_returnsNonNull() {
+        assertThat(fundConfigService.toChooserResponse()).isNotNull();
+    }
+
+    @Test
+    void toChooserResponse_hasDisclaimer() {
+        FundChooserResponse response = fundConfigService.toChooserResponse();
+        assertThat(response.getDisclaimer())
+                .contains("Past performance is not a reliable indication of future performance.");
+    }
+
+    @Test
+    void toChooserResponse_hasPerformanceAsOf() {
+        FundChooserResponse response = fundConfigService.toChooserResponse();
+        assertThat(response.getPerformanceAsOf()).isEqualTo("2025-03-31");
+    }
+
+    @Test
+    void toChooserResponse_returnsAllFourFunds() {
+        FundChooserResponse response = fundConfigService.toChooserResponse();
+        assertThat(response.getFunds()).hasSize(4);
+    }
+
+    @Test
+    void toChooserResponse_fundsAreInExpectedOrder() {
+        List<FundChooserItem> funds = fundConfigService.toChooserResponse().getFunds();
+        assertThat(funds).extracting(FundChooserItem::getId)
+                .containsExactly("growth", "balanced", "moderate", "conservative");
+    }
+
+    @Test
+    void toChooserResponse_feeValueAndUnitAreCorrect() {
+        List<FundChooserItem> funds = fundConfigService.toChooserResponse().getFunds();
+        assertThat(funds.get(0).getFee().getValue()).isEqualTo(0.85);
+        assertThat(funds.get(1).getFee().getValue()).isEqualTo(0.80);
+        assertThat(funds.get(2).getFee().getValue()).isEqualTo(0.70);
+        assertThat(funds.get(3).getFee().getValue()).isEqualTo(0.70);
+        funds.forEach(f -> assertThat(f.getFee().getUnit()).isEqualTo("%"));
+    }
+
+    @Test
+    void toChooserResponse_feeCentsDescriptionComputedCorrectly() {
+        List<FundChooserItem> funds = fundConfigService.toChooserResponse().getFunds();
+        assertThat(funds.get(0).getFee().getDescription()).isEqualTo("85c per $100 of your balance per year");
+        assertThat(funds.get(1).getFee().getDescription()).isEqualTo("80c per $100 of your balance per year");
+        assertThat(funds.get(2).getFee().getDescription()).isEqualTo("70c per $100 of your balance per year");
+        assertThat(funds.get(3).getFee().getDescription()).isEqualTo("70c per $100 of your balance per year");
+    }
+
+    @Test
+    void toChooserResponse_feeLabelIsCorrect() {
+        fundConfigService.toChooserResponse().getFunds()
+                .forEach(f -> assertThat(f.getFee().getLabel()).isEqualTo("Fee"));
+    }
+
+    @Test
+    void toChooserResponse_estimatedReturnUsesFiveYearValue() {
+        List<FundChooserItem> funds = fundConfigService.toChooserResponse().getFunds();
+        assertThat(funds.get(0).getEstimatedReturn().getValue()).isEqualTo(6.33);
+        assertThat(funds.get(1).getEstimatedReturn().getValue()).isEqualTo(5.04);
+        assertThat(funds.get(2).getEstimatedReturn().getValue()).isEqualTo(3.81);
+        assertThat(funds.get(3).getEstimatedReturn().getValue()).isEqualTo(2.60);
+    }
+
+    @Test
+    void toChooserResponse_estimatedReturnPeriodIsCorrect() {
+        fundConfigService.toChooserResponse().getFunds().forEach(f -> {
+            assertThat(f.getEstimatedReturn().getPeriodValue()).isEqualTo(5);
+            assertThat(f.getEstimatedReturn().getPeriodUnit()).isEqualTo("years");
+            assertThat(f.getEstimatedReturn().getUnit()).isEqualTo("%");
+        });
+    }
+
+    @Test
+    void toChooserResponse_estimatedReturnLabelsAreCorrect() {
+        fundConfigService.toChooserResponse().getFunds().forEach(f -> {
+            assertThat(f.getEstimatedReturn().getLabel()).isEqualTo("Return");
+            assertThat(f.getEstimatedReturn().getDescription())
+                    .isEqualTo("Estimated average annual return over 5 years");
+        });
+    }
+
+    @Test
+    void toChooserResponse_timeframeValuesAreCorrect() {
+        List<FundChooserItem> funds = fundConfigService.toChooserResponse().getFunds();
+        assertThat(funds.get(0).getMinInvestmentTimeframe().getValue()).isEqualTo(10);
+        assertThat(funds.get(1).getMinInvestmentTimeframe().getValue()).isEqualTo(7);
+        assertThat(funds.get(2).getMinInvestmentTimeframe().getValue()).isEqualTo(5);
+        assertThat(funds.get(3).getMinInvestmentTimeframe().getValue()).isEqualTo(3);
+    }
+
+    @Test
+    void toChooserResponse_timeframeLabelsAreCorrect() {
+        fundConfigService.toChooserResponse().getFunds().forEach(f -> {
+            assertThat(f.getMinInvestmentTimeframe().getUnit()).isEqualTo("years");
+            assertThat(f.getMinInvestmentTimeframe().getLabel()).isEqualTo("Time");
+            assertThat(f.getMinInvestmentTimeframe().getDescription())
+                    .isEqualTo("Recommended min. investment time");
+        });
+    }
+
+    @Test
+    void toChooserResponse_riskIndicatorValuesAreCorrect() {
+        List<FundChooserItem> funds = fundConfigService.toChooserResponse().getFunds();
+        assertThat(funds.get(0).getRiskIndicator().getValue()).isEqualTo(4);
+        assertThat(funds.get(1).getRiskIndicator().getValue()).isEqualTo(4);
+        assertThat(funds.get(2).getRiskIndicator().getValue()).isEqualTo(4);
+        assertThat(funds.get(3).getRiskIndicator().getValue()).isEqualTo(3);
+    }
+
+    @Test
+    void toChooserResponse_riskScaleBoundsAreCorrect() {
+        fundConfigService.toChooserResponse().getFunds().forEach(f -> {
+            assertThat(f.getRiskIndicator().getScaleMin()).isEqualTo(1);
+            assertThat(f.getRiskIndicator().getScaleMax()).isEqualTo(7);
+        });
+    }
+
+    @Test
+    void toChooserResponse_riskLabelsAreCorrect() {
+        fundConfigService.toChooserResponse().getFunds().forEach(f -> {
+            assertThat(f.getRiskIndicator().getLabel()).isEqualTo("Risk");
+            assertThat(f.getRiskIndicator().getDescription()).isEqualTo("How much the fund goes up and down");
+        });
+    }
+
+    @Test
+    void toChooserResponse_missingFiveYearReturnDefaultsToZero() {
+        // Build a minimal config with a fund that has no 5-year return
+        FundConfig sparseConfig = new FundConfig();
+        sparseConfig.setVersion("test");
+        sparseConfig.setPerformanceAsOf("2025-03-31");
+        sparseConfig.setDisclaimer("disclaimer");
+        com.fundmetrics.api.model.Fund fund = new com.fundmetrics.api.model.Fund();
+        fund.setId("test");
+        fund.setName("Test Fund");
+        com.fundmetrics.api.model.FundFee fee = new com.fundmetrics.api.model.FundFee();
+        fee.setAnnualFundCharge(0.50);
+        fee.setUnit("%");
+        fund.setFee(fee);
+        fund.setReturns(java.util.Map.of(ReturnPeriod.ONE_YEAR, 5.0)); // no 5-year entry
+        com.fundmetrics.api.model.InvestmentTimeframe tf = new com.fundmetrics.api.model.InvestmentTimeframe();
+        tf.setValue(3);
+        tf.setUnit("years");
+        fund.setMinInvestmentTimeframe(tf);
+        com.fundmetrics.api.model.RiskIndicator risk = new com.fundmetrics.api.model.RiskIndicator();
+        risk.setValue(2);
+        risk.setLabel("Low");
+        fund.setRiskIndicator(risk);
+        sparseConfig.setFunds(List.of(fund));
+
+        ReflectionTestUtils.setField(fundConfigService, "activeConfig", sparseConfig);
+        FundChooserResponse response = fundConfigService.toChooserResponse();
+        assertThat(response.getFunds().get(0).getEstimatedReturn().getValue()).isEqualTo(0.0);
+    }
+
+    // -------------------------------------------------------------------------
 
     @Test
     void returnsValuesAreDifferentBetweenVersions() {

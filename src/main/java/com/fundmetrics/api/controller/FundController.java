@@ -19,6 +19,7 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Map;
 
@@ -212,7 +213,7 @@ public class FundController {
         LocalDate localDate;
         try {
             localDate = LocalDate.parse(date);
-        } catch (Exception e) {
+        } catch (DateTimeParseException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid date format. Use YYYY-MM-DD.");
         }
         FundConfig config = fundConfigService.resolveConfigForDate(localDate);
