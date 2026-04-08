@@ -66,8 +66,11 @@ public class FundChooserItem {
         @Schema(description = "Unit suffix", example = "%")
         String unit;
 
-        @Schema(description = "Return period this value represents", example = "5years")
-        String period;
+        @Schema(description = "Numeric length of the return period", example = "5")
+        int periodValue;
+
+        @Schema(description = "Unit of the return period", example = "years")
+        String periodUnit;
 
         @Schema(description = "Column heading label", example = "Return")
         String label;
