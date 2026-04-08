@@ -340,7 +340,8 @@ Example response:
       "estimatedReturn": {
         "value": 6.33,
         "unit": "%",
-        "period": "5years",
+        "periodValue": 5,
+        "periodUnit": "years",
         "label": "Return",
         "description": "Estimated average annual return over 5 years"
       },
