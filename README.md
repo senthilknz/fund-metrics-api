@@ -358,6 +358,99 @@ Example response:
         "label": "Risk",
         "description": "How much the fund goes up and down"
       }
+    },
+    {
+      "id": "balanced",
+      "name": "Balanced Fund",
+      "fee": {
+        "value": 0.80,
+        "unit": "%",
+        "label": "Fee",
+        "description": "80c per $100 of your balance per year"
+      },
+      "estimatedReturn": {
+        "value": 5.04,
+        "unit": "%",
+        "periodValue": 5,
+        "periodUnit": "years",
+        "label": "Return",
+        "description": "Estimated average annual return over 5 years"
+      },
+      "minInvestmentTimeframe": {
+        "value": 7,
+        "unit": "years",
+        "label": "Time",
+        "description": "Recommended min. investment time"
+      },
+      "riskIndicator": {
+        "value": 4,
+        "scaleMin": 1,
+        "scaleMax": 7,
+        "label": "Risk",
+        "description": "How much the fund goes up and down"
+      }
+    },
+    {
+      "id": "moderate",
+      "name": "Moderate Fund",
+      "fee": {
+        "value": 0.70,
+        "unit": "%",
+        "label": "Fee",
+        "description": "70c per $100 of your balance per year"
+      },
+      "estimatedReturn": {
+        "value": 3.81,
+        "unit": "%",
+        "periodValue": 5,
+        "periodUnit": "years",
+        "label": "Return",
+        "description": "Estimated average annual return over 5 years"
+      },
+      "minInvestmentTimeframe": {
+        "value": 5,
+        "unit": "years",
+        "label": "Time",
+        "description": "Recommended min. investment time"
+      },
+      "riskIndicator": {
+        "value": 4,
+        "scaleMin": 1,
+        "scaleMax": 7,
+        "label": "Risk",
+        "description": "How much the fund goes up and down"
+      }
+    },
+    {
+      "id": "conservative",
+      "name": "Conservative Fund",
+      "fee": {
+        "value": 0.70,
+        "unit": "%",
+        "label": "Fee",
+        "description": "70c per $100 of your balance per year"
+      },
+      "estimatedReturn": {
+        "value": 2.60,
+        "unit": "%",
+        "periodValue": 5,
+        "periodUnit": "years",
+        "label": "Return",
+        "description": "Estimated average annual return over 5 years"
+      },
+      "minInvestmentTimeframe": {
+        "value": 3,
+        "unit": "years",
+        "label": "Time",
+        "description": "Recommended min. investment time"
+      },
+      "riskIndicator": {
+        "value": 3,
+        "scaleMin": 1,
+        "scaleMax": 7,
+        "label": "Risk",
+        "description": "How much the fund goes up and down"
+      }
     }
   ]
 }
