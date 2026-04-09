@@ -91,7 +91,7 @@ note right of DEV #FFFDE7
 end note
 
 DEV ->  DEV : Verify locally
-DEV ->  DEV : <font color="#2C5F8A">./mvnw test</font>\n<font color="#2C5F8A">curl /api/v1/funds/history</font>\n<font color="#2C5F8A">curl /api/v1/funds/preview?date=2025-07-01</font>
+DEV ->  DEV : <font color="#2C5F8A">./mvnw test</font>\n<font color="#2C5F8A">curl /api/v1/funds/history</font>\n<font color="#2C5F8A">curl /api/v1/funds/preview?date=2025-07-01</font>\n<font color="#2C5F8A">curl /api/v1/funds/chooser</font> → new figures in chooser response?
 
 DEV ->  GIT : Push branch
 
@@ -130,9 +130,10 @@ SP   ->  SYST : Rolling deploy (zero downtime)
 DEV  ->  SYST : <font color="#2C5F8A">GET /api/v1/funds/history</font>\n→ v3 present?
 DEV  ->  SYST : <font color="#2C5F8A">GET /api/v1/funds/preview?date=2025-07-01</font>\n→ figures correct?
 DEV  ->  SYST : <font color="#2C5F8A">GET /api/v1/funds</font>\n→ still serving previous version?
+DEV  ->  SYST : <font color="#2C5F8A">GET /api/v1/funds/chooser</font>\n→ fee, return, timeframe, risk all correct?
 
 note right of SYST #D5F5E3
-  All three checks must pass
+  All four checks must pass
   before promoting to UAT.
 end note
 
@@ -174,6 +175,7 @@ SP   ->  PROD : Rolling deploy (zero downtime)
 
 DEV  ->  PROD : <font color="#2C5F8A">GET /api/v1/funds/history</font> → v3 present?
 DEV  ->  PROD : <font color="#2C5F8A">GET /api/v1/funds</font> → still serving v2?
+DEV  ->  PROD : <font color="#2C5F8A">GET /api/v1/funds/chooser</font> → still showing previous figures?
 
 note right of PROD #FFFDE7
   New config is embedded and ready.
@@ -192,9 +194,15 @@ PROD ->  PROD : v3 becomes active
 note over SCH, PROD #D5F5E3
   <b>No deployment. No manual intervention. No on-call required.</b>
   ────────────────────────────────────────────────────────────────
-  Micro frontend sends:  GET /api/v1/funds  If-None-Match: "2.0.0"
-  API responds:          200  ETag: "3.0.0"  [new fund data]
-  All subsequent calls:  304 Not Modified  (until next quarterly update)
+  Full config endpoint (ETag/304 caching):
+    Micro frontend sends:  GET /api/v1/funds  If-None-Match: "2.0.0"
+    API responds:          200  ETag: "3.0.0"  [new fund data]
+    Subsequent calls:      304 Not Modified  (until next quarterly update)
+  ────────────────────────────────────────────────────────────────
+  Chooser endpoint (always 200, BFF shaped for fund selection page):
+    Micro frontend sends:  GET /api/v1/funds/chooser
+    API responds:          200  [new fee, return, timeframe, risk data]
+    Both endpoints switch simultaneously — same active config source.
 end note
 
 @enduml
