@@ -29,52 +29,30 @@ class FundConfigServiceTest {
     }
 
     @Test
-    void bothConfigFilesLoad() {
+    void configFileLoads() {
         List<FundConfig> history = fundConfigService.getHistory();
-        assertThat(history).hasSize(2);
-        assertThat(history).extracting(FundConfig::getVersion)
-                .containsExactlyInAnyOrder("1.0.0", "2.0.0");
+        assertThat(history).hasSize(1);
+        assertThat(history.get(0).getVersion()).isEqualTo("2.0.0");
     }
 
     @Test
-    void historyIsSortedByEffectiveFromAscending() {
-        List<FundConfig> history = fundConfigService.getHistory();
-        assertThat(history.get(0).getVersion()).isEqualTo("1.0.0");
-        assertThat(history.get(1).getVersion()).isEqualTo("2.0.0");
-    }
-
-    @Test
-    void v1IsActiveBeforeApril2025() {
-        FundConfig config = fundConfigService.resolveConfigForDate(LocalDate.of(2025, 3, 31));
-        assertThat(config).isNotNull();
-        assertThat(config.getVersion()).isEqualTo("1.0.0");
-    }
-
-    @Test
-    void v2IsActiveOnApril2025() {
+    void configIsActiveOnOrAfterEffectiveDate() {
         FundConfig config = fundConfigService.resolveConfigForDate(LocalDate.of(2025, 4, 1));
         assertThat(config).isNotNull();
         assertThat(config.getVersion()).isEqualTo("2.0.0");
     }
 
     @Test
-    void v2IsActiveAfterApril2025() {
+    void configIsActiveAfterEffectiveDate() {
         FundConfig config = fundConfigService.resolveConfigForDate(LocalDate.of(2025, 12, 31));
         assertThat(config).isNotNull();
         assertThat(config.getVersion()).isEqualTo("2.0.0");
     }
 
     @Test
-    void noConfigBeforeV1EffectiveDate() {
-        FundConfig config = fundConfigService.resolveConfigForDate(LocalDate.of(2024, 12, 31));
+    void noConfigBeforeEffectiveDate() {
+        FundConfig config = fundConfigService.resolveConfigForDate(LocalDate.of(2025, 3, 31));
         assertThat(config).isNull();
-    }
-
-    @Test
-    void forceActivateVersionSwitchesToV1() {
-        boolean result = fundConfigService.forceActivateVersion("1.0.0");
-        assertThat(result).isTrue();
-        assertThat(fundConfigService.getActiveConfig().getVersion()).isEqualTo("1.0.0");
     }
 
     @Test
@@ -312,18 +290,4 @@ class FundConfigServiceTest {
         assertThat(response.getFunds().get(0).getEstimatedReturn().getValue()).isEqualTo(0.0);
     }
 
-    // -------------------------------------------------------------------------
-
-    @Test
-    void returnsValuesAreDifferentBetweenVersions() {
-        FundConfig v1 = fundConfigService.getHistory().get(0);
-        FundConfig v2 = fundConfigService.getHistory().get(1);
-        double v1Growth1yr = v1.getFunds().stream()
-                .filter(f -> "growth".equals(f.getId())).findFirst().orElseThrow()
-                .getReturns().get(ReturnPeriod.ONE_YEAR);
-        double v2Growth1yr = v2.getFunds().stream()
-                .filter(f -> "growth".equals(f.getId())).findFirst().orElseThrow()
-                .getReturns().get(ReturnPeriod.ONE_YEAR);
-        assertThat(v1Growth1yr).isNotEqualTo(v2Growth1yr);
-    }
 }
