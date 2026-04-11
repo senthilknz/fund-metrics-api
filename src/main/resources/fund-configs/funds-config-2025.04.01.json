@@ -34,8 +34,7 @@
       "description": "Estimated average annual return over 5 years",
       "unit": "%",
       "periods": ["3months","6months","1year","3years","5years","10years"],
-      "chooserPeriod": "5years",
-      "tooltip": "Average annual return is over five years after deducting annual fund charges but before tax to 31 December 2025."
+      "chooserPeriod": "5years"
     },
     "minInvestmentTimeframe": {
       "label": "Time",
@@ -47,12 +46,7 @@
       "description": "How much the fund goes up and down",
       "scale": "1 (lowest) to 7 (highest)",
       "scaleMin": 1,
-      "scaleMax": 7,
-      "tooltip": "How much the fund goes up and down in value (i.e. amount of volatility). With more risk comes the potential for greater returns over time. Find out more about how the risk indicator is calculated in the Westpac Active Series Product Disclosure Statement.",
-      "tooltipLink": {
-        "text": "Westpac Active Series Product Disclosure Statement",
-        "url": "https://www.westpac.co.nz/kiwisaver/active-series/pds/"
-      }
+      "scaleMax": 7
     }
   },
   "funds": [
@@ -62,8 +56,17 @@
       "description": "Higher long-term capital growth. Significant short-term fluctuations expected. Predominantly growth assets.",
       "fee": { "annualFundCharge": 0.85, "unit": "%" },
       "returns": { "3months": 1.92, "6months": 8.74, "1year": 13.11, "3years": 12.85, "5years": 6.33, "10years": 7.88 },
+      "returnsTooltip": "Average annual return is over five years after deducting annual fund charges but before tax to 31 December 2025.",
       "minInvestmentTimeframe": { "value": 10, "unit": "years" },
-      "riskIndicator": { "value": 4, "label": "Medium" }
+      "riskIndicator": {
+        "value": 4,
+        "label": "Medium",
+        "tooltip": "How much the fund goes up and down in value (i.e. amount of volatility). With more risk comes the potential for greater returns over time. Find out more about how the risk indicator is calculated in the Westpac Active Series Product Disclosure Statement.",
+        "tooltipLink": {
+          "text": "Westpac Active Series Product Disclosure Statement",
+          "url": "https://www.westpac.co.nz/kiwisaver/active-series/pds/"
+        }
+      }
     },
     {
       "id": "balanced",
@@ -71,8 +74,17 @@
       "description": "Blend of growth and income assets. Moderate growth with some downside protection.",
       "fee": { "annualFundCharge": 0.80, "unit": "%" },
       "returns": { "3months": 1.54, "6months": 7.10, "1year": 11.22, "3years": 10.93, "5years": 5.04, "10years": 6.61 },
+      "returnsTooltip": "Average annual return is over five years after deducting annual fund charges but before tax to 31 December 2025.",
       "minInvestmentTimeframe": { "value": 7, "unit": "years" },
-      "riskIndicator": { "value": 4, "label": "Medium" }
+      "riskIndicator": {
+        "value": 4,
+        "label": "Medium",
+        "tooltip": "How much the fund goes up and down in value (i.e. amount of volatility). With more risk comes the potential for greater returns over time. Find out more about how the risk indicator is calculated in the Westpac Active Series Product Disclosure Statement.",
+        "tooltipLink": {
+          "text": "Westpac Active Series Product Disclosure Statement",
+          "url": "https://www.westpac.co.nz/kiwisaver/active-series/pds/"
+        }
+      }
     },
     {
       "id": "moderate",
@@ -80,8 +92,17 @@
       "description": "Income-tilted with some growth exposure. Shorter timeframe or lower volatility tolerance.",
       "fee": { "annualFundCharge": 0.70, "unit": "%" },
       "returns": { "3months": 1.05, "6months": 5.21, "1year": 8.97, "3years": 8.80, "5years": 3.81, "10years": 5.19 },
+      "returnsTooltip": "Average annual return is over five years after deducting annual fund charges but before tax to 31 December 2025.",
       "minInvestmentTimeframe": { "value": 5, "unit": "years" },
-      "riskIndicator": { "value": 4, "label": "Medium" }
+      "riskIndicator": {
+        "value": 4,
+        "label": "Medium",
+        "tooltip": "How much the fund goes up and down in value (i.e. amount of volatility). With more risk comes the potential for greater returns over time. Find out more about how the risk indicator is calculated in the Westpac Active Series Product Disclosure Statement.",
+        "tooltipLink": {
+          "text": "Westpac Active Series Product Disclosure Statement",
+          "url": "https://www.westpac.co.nz/kiwisaver/active-series/pds/"
+        }
+      }
     },
     {
       "id": "conservative",
@@ -89,8 +110,17 @@
       "description": "Primarily income assets. Short timeframe or capital preservation focus.",
       "fee": { "annualFundCharge": 0.70, "unit": "%" },
       "returns": { "3months": 0.55, "6months": 3.42, "1year": 6.78, "3years": 6.65, "5years": 2.60, "10years": 3.74 },
+      "returnsTooltip": "Average annual return is over five years after deducting annual fund charges but before tax to 31 December 2025.",
       "minInvestmentTimeframe": { "value": 3, "unit": "years" },
-      "riskIndicator": { "value": 3, "label": "Low to Medium" }
+      "riskIndicator": {
+        "value": 3,
+        "label": "Low to Medium",
+        "tooltip": "How much the fund goes up and down in value (i.e. amount of volatility). With more risk comes the potential for greater returns over time. Find out more about how the risk indicator is calculated in the Westpac Active Series Product Disclosure Statement.",
+        "tooltipLink": {
+          "text": "Westpac Active Series Product Disclosure Statement",
+          "url": "https://www.westpac.co.nz/kiwisaver/active-series/pds/"
+        }
+      }
     }
   ]
 }

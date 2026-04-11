@@ -235,6 +235,29 @@ class FundConfigServiceTest {
     }
 
     @Test
+    void toChooserResponse_returnsTooltipIsPerFund() {
+        fundConfigService.toChooserResponse().getFunds().forEach(f ->
+                assertThat(f.getEstimatedReturn().getTooltip())
+                        .contains("after deducting annual fund charges but before tax"));
+    }
+
+    @Test
+    void toChooserResponse_riskTooltipIsPerFund() {
+        fundConfigService.toChooserResponse().getFunds().forEach(f ->
+                assertThat(f.getRiskIndicator().getTooltip())
+                        .contains("amount of volatility"));
+    }
+
+    @Test
+    void toChooserResponse_riskTooltipLinkIsPerFund() {
+        fundConfigService.toChooserResponse().getFunds().forEach(f -> {
+            assertThat(f.getRiskIndicator().getTooltipLink()).isNotNull();
+            assertThat(f.getRiskIndicator().getTooltipLink().getUrl())
+                    .contains("westpac.co.nz");
+        });
+    }
+
+    @Test
     void toChooserResponse_missingFiveYearReturnDefaultsToZero() {
         // Build a minimal config with a fund that has no 5-year return
         FundConfig sparseConfig = new FundConfig();

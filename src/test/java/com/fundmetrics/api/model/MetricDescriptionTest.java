@@ -28,6 +28,7 @@ class MetricDescriptionTest {
         assertThat(desc.getChooserPeriod()).isEqualTo(ReturnPeriod.FIVE_YEARS);
         assertThat(desc.getScaleMin()).isEqualTo(1);
         assertThat(desc.getScaleMax()).isEqualTo(7);
+        // tooltip and tooltipLink are per-fund fields (on Fund / RiskIndicator), not on MetricDescription
     }
 
     @Test

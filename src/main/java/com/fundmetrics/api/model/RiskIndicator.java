@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
+
 /**
  * Risk/return profile of a fund on the standard 1–7 scale defined by
  * the Financial Markets Authority (FMA) Product Disclosure Statement framework.
@@ -27,4 +28,12 @@ public class RiskIndicator {
     /** Human-readable label corresponding to the numeric score. */
     @Schema(description = "Human-readable risk label", example = "Medium to High")
     private String label;
+
+    /** Fund-specific tooltip body text shown on the ⓘ icon. */
+    @Schema(description = "Fund-specific tooltip body for the risk card", nullable = true)
+    private String tooltip;
+
+    /** Optional link appended to the fund-specific risk tooltip (e.g. link to the relevant PDS). */
+    @Schema(description = "Fund-specific tooltip link for the risk card — points to the relevant PDS", nullable = true)
+    private TooltipLink tooltipLink;
 }

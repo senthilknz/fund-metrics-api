@@ -50,4 +50,20 @@ public class Fund {
     /** Risk/return profile on the standard 1 (lowest) to 7 (highest) scale. */
     @Schema(description = "Risk indicator on a 1 (lowest) to 7 (highest) scale")
     private RiskIndicator riskIndicator;
+
+    /**
+     * Fund-specific tooltip body text shown on the ⓘ icon of the returns card.
+     * Allows each fund to carry distinct return explanations (e.g. funds without a
+     * full 5-year history need different copy to funds with a complete track record).
+     */
+    @Schema(description = "Fund-specific tooltip body for the returns card", nullable = true)
+    private String returnsTooltip;
+
+    /**
+     * Optional link appended to the fund-specific returns tooltip.
+     * Most funds leave this null; used when the copy needs to direct investors
+     * to a specific page (e.g. a comparison tool for newer funds).
+     */
+    @Schema(description = "Fund-specific tooltip link for the returns card", nullable = true)
+    private TooltipLink returnsTooltipLink;
 }

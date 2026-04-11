@@ -211,7 +211,8 @@ public class FundConfigService {
                             .periodUnit(returnPeriod.getPeriodUnit())
                             .label(returnsDesc.getLabel())
                             .description(returnsDesc.getDescription())
-                            .tooltip(returnsDesc.getTooltip())
+                            .tooltip(fund.getReturnsTooltip())
+                            .tooltipLink(fund.getReturnsTooltipLink())
                             .build())
                     .minInvestmentTimeframe(TimeframeDisplay.builder()
                             .value(fund.getMinInvestmentTimeframe().getValue())
@@ -225,8 +226,8 @@ public class FundConfigService {
                             .scaleMax(riskDesc.getScaleMax())
                             .label(riskDesc.getLabel())
                             .description(riskDesc.getDescription())
-                            .tooltip(riskDesc.getTooltip())
-                            .tooltipLink(riskDesc.getTooltipLink())
+                            .tooltip(fund.getRiskIndicator().getTooltip())
+                            .tooltipLink(fund.getRiskIndicator().getTooltipLink())
                             .build())
                     .build();
         }).toList();

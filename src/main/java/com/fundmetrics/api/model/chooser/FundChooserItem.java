@@ -83,6 +83,9 @@ public class FundChooserItem {
         @Schema(description = "Tooltip body text shown on ⓘ icon tap",
                 example = "Average annual return is over five years after deducting annual fund charges but before tax.")
         String tooltip;
+
+        @Schema(description = "Optional link appended to the returns tooltip", nullable = true)
+        TooltipLink tooltipLink;
     }
 
     @Schema(description = "Recommended minimum investment timeframe with co-located display strings")

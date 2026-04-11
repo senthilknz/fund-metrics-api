@@ -64,23 +64,6 @@ public class MetricDescription {
     private List<ReturnPeriod> periods;
 
     /**
-     * Tooltip body text shown when the user taps the ⓘ icon on the chooser card.
-     * Only present for metrics that have an info icon (currently {@code returns}
-     * and {@code riskIndicator}).
-     */
-    @Schema(description = "Tooltip body text shown on ⓘ icon tap — returns and riskIndicator only",
-            example = "Average annual return is over five years after deducting annual fund charges but before tax.",
-            nullable = true)
-    private String tooltip;
-
-    /**
-     * Optional hyperlink appended to the tooltip text.
-     * Only present for the {@code riskIndicator} metric (links to the PDS).
-     */
-    @Schema(description = "Optional link appended to the tooltip — riskIndicator only", nullable = true)
-    private TooltipLink tooltipLink;
-
-    /**
      * Which return period to display on the chooser card.
      * Only present for the {@code returns} metric (e.g. {@code "5years"}).
      */
