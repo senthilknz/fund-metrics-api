@@ -55,6 +55,14 @@ public class FundConfig {
     @Schema(description = "Descriptions and metadata for each metric type, keyed by metric name")
     private Map<String, MetricDescription> metricDescriptions;
 
+    /**
+     * Chooser-page display configuration: labels, units, descriptions, and scale bounds
+     * for each metric card. Drives {@link com.fundmetrics.api.service.FundConfigService#toChooserResponse()}
+     * without any hardcoded display strings in code.
+     */
+    @Schema(description = "Display strings for the fund chooser UI — labels, descriptions, and scale bounds")
+    private ChooserDisplay chooserDisplay;
+
     /** The ordered list of funds included in this config. */
     @Schema(description = "List of funds with their metrics for this config version")
     private List<Fund> funds;

@@ -28,6 +28,28 @@
       "scale": "1 (lowest) to 7 (highest)"
     }
   },
+  "chooserDisplay": {
+    "returnPeriod": "5years",
+    "fee": {
+      "label": "Fee",
+      "description": "{cents}c per $100 of your balance per year"
+    },
+    "returns": {
+      "label": "Return",
+      "unit": "%",
+      "description": "Estimated average annual return over 5 years"
+    },
+    "timeframe": {
+      "label": "Time",
+      "description": "Recommended min. investment time"
+    },
+    "risk": {
+      "label": "Risk",
+      "description": "How much the fund goes up and down",
+      "scaleMin": 1,
+      "scaleMax": 7
+    }
+  },
   "funds": [
     {
       "id": "growth",

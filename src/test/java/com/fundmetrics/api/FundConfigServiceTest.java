@@ -1,5 +1,6 @@
 package com.fundmetrics.api;
 
+import com.fundmetrics.api.model.ChooserDisplay;
 import com.fundmetrics.api.model.FundConfig;
 import com.fundmetrics.api.model.ReturnPeriod;
 import com.fundmetrics.api.model.chooser.FundChooserItem;
@@ -265,6 +266,29 @@ class FundConfigServiceTest {
         risk.setLabel("Low");
         fund.setRiskIndicator(risk);
         sparseConfig.setFunds(List.of(fund));
+
+        ChooserDisplay display = new ChooserDisplay();
+        display.setReturnPeriod(ReturnPeriod.FIVE_YEARS);
+        ChooserDisplay.MetricConfig feeDisplay = new ChooserDisplay.MetricConfig();
+        feeDisplay.setLabel("Fee");
+        feeDisplay.setDescription("{cents}c per $100 of your balance per year");
+        display.setFee(feeDisplay);
+        ChooserDisplay.MetricConfig returnsDisplay = new ChooserDisplay.MetricConfig();
+        returnsDisplay.setLabel("Return");
+        returnsDisplay.setUnit("%");
+        returnsDisplay.setDescription("Estimated average annual return over 5 years");
+        display.setReturns(returnsDisplay);
+        ChooserDisplay.MetricConfig timeframeDisplay = new ChooserDisplay.MetricConfig();
+        timeframeDisplay.setLabel("Time");
+        timeframeDisplay.setDescription("Recommended min. investment time");
+        display.setTimeframe(timeframeDisplay);
+        ChooserDisplay.RiskConfig riskDisplay = new ChooserDisplay.RiskConfig();
+        riskDisplay.setLabel("Risk");
+        riskDisplay.setDescription("How much the fund goes up and down");
+        riskDisplay.setScaleMin(1);
+        riskDisplay.setScaleMax(7);
+        display.setRisk(riskDisplay);
+        sparseConfig.setChooserDisplay(display);
 
         ReflectionTestUtils.setField(fundConfigService, "activeConfig", sparseConfig);
         FundChooserResponse response = fundConfigService.toChooserResponse();

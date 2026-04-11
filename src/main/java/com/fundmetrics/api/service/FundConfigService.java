@@ -1,6 +1,7 @@
 package com.fundmetrics.api.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fundmetrics.api.model.ChooserDisplay;
 import com.fundmetrics.api.model.FundConfig;
 import com.fundmetrics.api.model.ReturnPeriod;
 import com.fundmetrics.api.model.chooser.FundChooserItem;
@@ -190,39 +191,44 @@ public class FundConfigService {
             return null;
         }
 
+        ChooserDisplay display = config.getChooserDisplay();
+        ReturnPeriod returnPeriod = display.getReturnPeriod();
+
         var items = config.getFunds().stream().map(fund -> {
-            double fee = fund.getFee().getAnnualFundCharge();
-            long centsPerHundred = Math.round(fee * 100);
+            double feeValue = fund.getFee().getAnnualFundCharge();
+            long centsPerHundred = Math.round(feeValue * 100);
+            String feeDescription = display.getFee().getDescription()
+                    .replace("{cents}", String.valueOf(centsPerHundred));
 
             return FundChooserItem.builder()
                     .id(fund.getId())
                     .name(fund.getName())
                     .fee(FeeDisplay.builder()
-                            .value(fee)
-                            .unit("%")
-                            .label("Fee")
-                            .description(centsPerHundred + "c per $100 of your balance per year")
+                            .value(feeValue)
+                            .unit(fund.getFee().getUnit())
+                            .label(display.getFee().getLabel())
+                            .description(feeDescription)
                             .build())
                     .estimatedReturn(ReturnDisplay.builder()
-                            .value(fund.getReturns().getOrDefault(ReturnPeriod.FIVE_YEARS, 0.0))
-                            .unit("%")
-                            .periodValue(ReturnPeriod.FIVE_YEARS.getPeriodValue())
-                            .periodUnit(ReturnPeriod.FIVE_YEARS.getPeriodUnit())
-                            .label("Return")
-                            .description("Estimated average annual return over 5 years")
+                            .value(fund.getReturns().getOrDefault(returnPeriod, 0.0))
+                            .unit(display.getReturns().getUnit())
+                            .periodValue(returnPeriod.getPeriodValue())
+                            .periodUnit(returnPeriod.getPeriodUnit())
+                            .label(display.getReturns().getLabel())
+                            .description(display.getReturns().getDescription())
                             .build())
                     .minInvestmentTimeframe(TimeframeDisplay.builder()
                             .value(fund.getMinInvestmentTimeframe().getValue())
                             .unit(fund.getMinInvestmentTimeframe().getUnit())
-                            .label("Time")
-                            .description("Recommended min. investment time")
+                            .label(display.getTimeframe().getLabel())
+                            .description(display.getTimeframe().getDescription())
                             .build())
                     .riskIndicator(RiskDisplay.builder()
                             .value(fund.getRiskIndicator().getValue())
-                            .scaleMin(1)
-                            .scaleMax(7)
-                            .label("Risk")
-                            .description("How much the fund goes up and down")
+                            .scaleMin(display.getRisk().getScaleMin())
+                            .scaleMax(display.getRisk().getScaleMax())
+                            .label(display.getRisk().getLabel())
+                            .description(display.getRisk().getDescription())
                             .build())
                     .build();
         }).toList();
