@@ -8,34 +8,26 @@
   "footerDisclaimer": "All our funds are invested in line with our sustainable investment policy. All Westpac KiwiSaver Scheme funds (except the Cash fund) have been certified by RIAA. RIAA does not currently assess cash funds as part of the Certification Program.\n\nReturn - past performance is not a reliable indication of future performance. Returns for any fund will vary and may be negative at times, which means your balance can be less than what you invested.\n\nRisk - the Default Balanced Fund started on 1 December 2021 and the High Growth Fund started on 25 September 2024. This means these funds do not have a full five-year return history. To calculate the risk indicator for the Default Balanced Fund, market index returns and actual returns have been used. To calculate the risk indicator for the High Growth Fund, only market index returns have been used. As a result, the risk indicators for these funds may provide a less reliable indication of the funds' potential future volatility.\n\nThe Responsible Investment Certification Program does not constitute financial product advice. Neither the Certification Symbol nor RIAA recommends to any person that any financial product is a suitable investment or that returns are guaranteed. Appropriate professional advice should be sought prior to making an investment decision. RIAA does not hold a Financial Advice Provider licence.",
   "metricDescriptions": {
     "fee": {
-      "label": "Annual Fund Charge",
-      "description": "Annual % fee deducted from invested balance.",
-      "unit": "% per annum",
-      "chooserLabel": "Fee",
-      "chooserDescription": "{cents}c per $100 of your balance per year"
+      "label": "Fee",
+      "description": "{cents}c per $100 of your balance per year",
+      "unit": "%"
     },
     "returns": {
-      "label": "Fund Returns",
-      "description": "Percentage gain/loss after fees, before tax. 3yr+ are average annual returns.",
+      "label": "Return",
+      "description": "Estimated average annual return over 5 years",
       "unit": "%",
       "periods": ["3months","6months","1year","3years","5years","10years"],
-      "chooserLabel": "Return",
-      "chooserDescription": "Estimated average annual return over 5 years",
       "chooserPeriod": "5years"
     },
     "minInvestmentTimeframe": {
-      "label": "Recommended Minimum Timeframe",
-      "description": "Minimum suggested period to remain invested. Money is not locked in.",
-      "unit": "years",
-      "chooserLabel": "Time",
-      "chooserDescription": "Recommended min. investment time"
+      "label": "Time",
+      "description": "Recommended min. investment time",
+      "unit": "years"
     },
     "riskIndicator": {
-      "label": "Risk Indicator",
-      "description": "1-7 scale. 1 = lowest risk/return. 7 = highest risk/return.",
+      "label": "Risk",
+      "description": "How much the fund goes up and down",
       "scale": "1 (lowest) to 7 (highest)",
-      "chooserLabel": "Risk",
-      "chooserDescription": "How much the fund goes up and down",
       "scaleMin": 1,
       "scaleMax": 7
     }

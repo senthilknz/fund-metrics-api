@@ -11,17 +11,23 @@ class MetricDescriptionTest {
     @Test
     void gettersAndSetters_workCorrectly() {
         MetricDescription desc = new MetricDescription();
-        desc.setLabel("Annual Fund Charge");
-        desc.setDescription("Annual % fee deducted from invested balance.");
-        desc.setUnit("% per annum");
+        desc.setLabel("Fee");
+        desc.setDescription("{cents}c per $100 of your balance per year");
+        desc.setUnit("%");
         desc.setScale("1 (lowest) to 7 (highest)");
         desc.setPeriods(List.of(ReturnPeriod.THREE_MONTHS, ReturnPeriod.FIVE_YEARS));
+        desc.setChooserPeriod(ReturnPeriod.FIVE_YEARS);
+        desc.setScaleMin(1);
+        desc.setScaleMax(7);
 
-        assertThat(desc.getLabel()).isEqualTo("Annual Fund Charge");
-        assertThat(desc.getDescription()).isEqualTo("Annual % fee deducted from invested balance.");
-        assertThat(desc.getUnit()).isEqualTo("% per annum");
+        assertThat(desc.getLabel()).isEqualTo("Fee");
+        assertThat(desc.getDescription()).isEqualTo("{cents}c per $100 of your balance per year");
+        assertThat(desc.getUnit()).isEqualTo("%");
         assertThat(desc.getScale()).isEqualTo("1 (lowest) to 7 (highest)");
         assertThat(desc.getPeriods()).containsExactly(ReturnPeriod.THREE_MONTHS, ReturnPeriod.FIVE_YEARS);
+        assertThat(desc.getChooserPeriod()).isEqualTo(ReturnPeriod.FIVE_YEARS);
+        assertThat(desc.getScaleMin()).isEqualTo(1);
+        assertThat(desc.getScaleMax()).isEqualTo(7);
     }
 
     @Test
@@ -29,6 +35,7 @@ class MetricDescriptionTest {
         MetricDescription desc = new MetricDescription();
         assertThat(desc.getScale()).isNull();
         assertThat(desc.getPeriods()).isNull();
+        assertThat(desc.getChooserPeriod()).isNull();
     }
 
     @Test

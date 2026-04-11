@@ -274,22 +274,22 @@ class FundConfigServiceTest {
         sparseConfig.setFunds(List.of(fund));
 
         MetricDescription feeDesc = new MetricDescription();
-        feeDesc.setChooserLabel("Fee");
-        feeDesc.setChooserDescription("{cents}c per $100 of your balance per year");
+        feeDesc.setLabel("Fee");
+        feeDesc.setDescription("{cents}c per $100 of your balance per year");
 
         MetricDescription returnsDesc = new MetricDescription();
         returnsDesc.setUnit("%");
-        returnsDesc.setChooserLabel("Return");
-        returnsDesc.setChooserDescription("Estimated average annual return over 5 years");
+        returnsDesc.setLabel("Return");
+        returnsDesc.setDescription("Estimated average annual return over 5 years");
         returnsDesc.setChooserPeriod(ReturnPeriod.FIVE_YEARS);
 
         MetricDescription timeframeDesc = new MetricDescription();
-        timeframeDesc.setChooserLabel("Time");
-        timeframeDesc.setChooserDescription("Recommended min. investment time");
+        timeframeDesc.setLabel("Time");
+        timeframeDesc.setDescription("Recommended min. investment time");
 
         MetricDescription riskDesc = new MetricDescription();
-        riskDesc.setChooserLabel("Risk");
-        riskDesc.setChooserDescription("How much the fund goes up and down");
+        riskDesc.setLabel("Risk");
+        riskDesc.setDescription("How much the fund goes up and down");
         riskDesc.setScaleMin(1);
         riskDesc.setScaleMax(7);
 

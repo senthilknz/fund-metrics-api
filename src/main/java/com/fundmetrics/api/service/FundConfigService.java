@@ -201,7 +201,7 @@ public class FundConfigService {
         var items = config.getFunds().stream().map(fund -> {
             double feeValue = fund.getFee().getAnnualFundCharge();
             long centsPerHundred = Math.round(feeValue * 100);
-            String feeDescription = feeDesc.getChooserDescription()
+            String feeDescription = feeDesc.getDescription()
                     .replace("{cents}", String.valueOf(centsPerHundred));
 
             return FundChooserItem.builder()
@@ -210,7 +210,7 @@ public class FundConfigService {
                     .fee(FeeDisplay.builder()
                             .value(feeValue)
                             .unit(fund.getFee().getUnit())
-                            .label(feeDesc.getChooserLabel())
+                            .label(feeDesc.getLabel())
                             .description(feeDescription)
                             .build())
                     .estimatedReturn(ReturnDisplay.builder()
@@ -218,21 +218,21 @@ public class FundConfigService {
                             .unit(returnsDesc.getUnit())
                             .periodValue(returnPeriod.getPeriodValue())
                             .periodUnit(returnPeriod.getPeriodUnit())
-                            .label(returnsDesc.getChooserLabel())
-                            .description(returnsDesc.getChooserDescription())
+                            .label(returnsDesc.getLabel())
+                            .description(returnsDesc.getDescription())
                             .build())
                     .minInvestmentTimeframe(TimeframeDisplay.builder()
                             .value(fund.getMinInvestmentTimeframe().getValue())
                             .unit(fund.getMinInvestmentTimeframe().getUnit())
-                            .label(timeframeDesc.getChooserLabel())
-                            .description(timeframeDesc.getChooserDescription())
+                            .label(timeframeDesc.getLabel())
+                            .description(timeframeDesc.getDescription())
                             .build())
                     .riskIndicator(RiskDisplay.builder()
                             .value(fund.getRiskIndicator().getValue())
                             .scaleMin(riskDesc.getScaleMin())
                             .scaleMax(riskDesc.getScaleMax())
-                            .label(riskDesc.getChooserLabel())
-                            .description(riskDesc.getChooserDescription())
+                            .label(riskDesc.getLabel())
+                            .description(riskDesc.getDescription())
                             .build())
                     .build();
         }).toList();
