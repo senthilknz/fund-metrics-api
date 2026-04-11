@@ -18,8 +18,11 @@ import java.util.List;
 @Builder
 public class FundChooserResponse {
 
-    @Schema(description = "Legal disclaimer to display alongside fund data")
+    @Schema(description = "Short legal disclaimer shown inline with fund data")
     String disclaimer;
+
+    @Schema(description = "Extended footer disclaimer — RIAA certification, methodology notes, and responsible-investment disclosures")
+    String footerDisclaimer;
 
     @Schema(description = "Date up to which performance figures are calculated", example = "2025-03-31")
     String performanceAsOf;

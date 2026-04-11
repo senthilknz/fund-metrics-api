@@ -43,25 +43,27 @@ public class FundConfig {
     @Schema(description = "Name of the data source for fund metrics", example = "Active Series")
     private String dataSource;
 
-    /** Legal disclaimer to be displayed alongside fund data. */
-    @Schema(description = "Legal disclaimer shown with fund performance data",
+    /** Short legal disclaimer shown inline with fund performance data. */
+    @Schema(description = "Short legal disclaimer shown with fund performance data",
             example = "Past performance is not a reliable indication of future performance.")
     private String disclaimer;
 
     /**
-     * Descriptions for each metric type (fee, returns, riskIndicator, etc.).
-     * Keyed by the metric name so the micro frontend can render labels and tooltips dynamically.
+     * Extended footer disclaimer for the chooser page — covers RIAA certification,
+     * return-calculation methodology, and responsible-investment disclosures.
+     * Supports multiple paragraphs separated by {@code \n\n}.
      */
-    @Schema(description = "Descriptions and metadata for each metric type, keyed by metric name")
-    private Map<String, MetricDescription> metricDescriptions;
+    @Schema(description = "Extended footer disclaimer for the chooser page (RIAA certification, methodology notes, etc.)")
+    private String footerDisclaimer;
 
     /**
-     * Chooser-page display configuration: labels, units, descriptions, and scale bounds
-     * for each metric card. Drives {@link com.fundmetrics.api.service.FundConfigService#toChooserResponse()}
-     * without any hardcoded display strings in code.
+     * Display metadata for each metric type (fee, returns, riskIndicator, etc.),
+     * keyed by metric name. Each entry covers both the full API response (label,
+     * description, unit) and the chooser card UI (chooserLabel, chooserDescription,
+     * chooserPeriod, scaleMin, scaleMax) — one section, no duplication.
      */
-    @Schema(description = "Display strings for the fund chooser UI — labels, descriptions, and scale bounds")
-    private ChooserDisplay chooserDisplay;
+    @Schema(description = "Display metadata for each metric — covers both the full API response and the chooser card UI")
+    private Map<String, MetricDescription> metricDescriptions;
 
     /** The ordered list of funds included in this config. */
     @Schema(description = "List of funds with their metrics for this config version")

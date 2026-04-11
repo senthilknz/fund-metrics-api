@@ -1,7 +1,7 @@
 package com.fundmetrics.api;
 
-import com.fundmetrics.api.model.ChooserDisplay;
 import com.fundmetrics.api.model.FundConfig;
+import com.fundmetrics.api.model.MetricDescription;
 import com.fundmetrics.api.model.ReturnPeriod;
 import com.fundmetrics.api.model.chooser.FundChooserItem;
 import com.fundmetrics.api.model.chooser.FundChooserResponse;
@@ -125,6 +125,12 @@ class FundConfigServiceTest {
         FundChooserResponse response = fundConfigService.toChooserResponse();
         assertThat(response.getDisclaimer())
                 .contains("Past performance is not a reliable indication of future performance.");
+    }
+
+    @Test
+    void toChooserResponse_hasFooterDisclaimer() {
+        FundChooserResponse response = fundConfigService.toChooserResponse();
+        assertThat(response.getFooterDisclaimer()).contains("RIAA");
     }
 
     @Test
@@ -267,28 +273,31 @@ class FundConfigServiceTest {
         fund.setRiskIndicator(risk);
         sparseConfig.setFunds(List.of(fund));
 
-        ChooserDisplay display = new ChooserDisplay();
-        display.setReturnPeriod(ReturnPeriod.FIVE_YEARS);
-        ChooserDisplay.MetricConfig feeDisplay = new ChooserDisplay.MetricConfig();
-        feeDisplay.setLabel("Fee");
-        feeDisplay.setDescription("{cents}c per $100 of your balance per year");
-        display.setFee(feeDisplay);
-        ChooserDisplay.MetricConfig returnsDisplay = new ChooserDisplay.MetricConfig();
-        returnsDisplay.setLabel("Return");
-        returnsDisplay.setUnit("%");
-        returnsDisplay.setDescription("Estimated average annual return over 5 years");
-        display.setReturns(returnsDisplay);
-        ChooserDisplay.MetricConfig timeframeDisplay = new ChooserDisplay.MetricConfig();
-        timeframeDisplay.setLabel("Time");
-        timeframeDisplay.setDescription("Recommended min. investment time");
-        display.setTimeframe(timeframeDisplay);
-        ChooserDisplay.RiskConfig riskDisplay = new ChooserDisplay.RiskConfig();
-        riskDisplay.setLabel("Risk");
-        riskDisplay.setDescription("How much the fund goes up and down");
-        riskDisplay.setScaleMin(1);
-        riskDisplay.setScaleMax(7);
-        display.setRisk(riskDisplay);
-        sparseConfig.setChooserDisplay(display);
+        MetricDescription feeDesc = new MetricDescription();
+        feeDesc.setChooserLabel("Fee");
+        feeDesc.setChooserDescription("{cents}c per $100 of your balance per year");
+
+        MetricDescription returnsDesc = new MetricDescription();
+        returnsDesc.setUnit("%");
+        returnsDesc.setChooserLabel("Return");
+        returnsDesc.setChooserDescription("Estimated average annual return over 5 years");
+        returnsDesc.setChooserPeriod(ReturnPeriod.FIVE_YEARS);
+
+        MetricDescription timeframeDesc = new MetricDescription();
+        timeframeDesc.setChooserLabel("Time");
+        timeframeDesc.setChooserDescription("Recommended min. investment time");
+
+        MetricDescription riskDesc = new MetricDescription();
+        riskDesc.setChooserLabel("Risk");
+        riskDesc.setChooserDescription("How much the fund goes up and down");
+        riskDesc.setScaleMin(1);
+        riskDesc.setScaleMax(7);
+
+        sparseConfig.setMetricDescriptions(java.util.Map.of(
+                "fee", feeDesc,
+                "returns", returnsDesc,
+                "minInvestmentTimeframe", timeframeDesc,
+                "riskIndicator", riskDesc));
 
         ReflectionTestUtils.setField(fundConfigService, "activeConfig", sparseConfig);
         FundChooserResponse response = fundConfigService.toChooserResponse();

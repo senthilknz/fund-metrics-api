@@ -1,8 +1,8 @@
 package com.fundmetrics.api.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fundmetrics.api.model.ChooserDisplay;
 import com.fundmetrics.api.model.FundConfig;
+import com.fundmetrics.api.model.MetricDescription;
 import com.fundmetrics.api.model.ReturnPeriod;
 import com.fundmetrics.api.model.chooser.FundChooserItem;
 import com.fundmetrics.api.model.chooser.FundChooserItem.FeeDisplay;
@@ -191,13 +191,17 @@ public class FundConfigService {
             return null;
         }
 
-        ChooserDisplay display = config.getChooserDisplay();
-        ReturnPeriod returnPeriod = display.getReturnPeriod();
+        var md = config.getMetricDescriptions();
+        MetricDescription feeDesc = md.get("fee");
+        MetricDescription returnsDesc = md.get("returns");
+        MetricDescription timeframeDesc = md.get("minInvestmentTimeframe");
+        MetricDescription riskDesc = md.get("riskIndicator");
+        ReturnPeriod returnPeriod = returnsDesc.getChooserPeriod();
 
         var items = config.getFunds().stream().map(fund -> {
             double feeValue = fund.getFee().getAnnualFundCharge();
             long centsPerHundred = Math.round(feeValue * 100);
-            String feeDescription = display.getFee().getDescription()
+            String feeDescription = feeDesc.getChooserDescription()
                     .replace("{cents}", String.valueOf(centsPerHundred));
 
             return FundChooserItem.builder()
@@ -206,35 +210,36 @@ public class FundConfigService {
                     .fee(FeeDisplay.builder()
                             .value(feeValue)
                             .unit(fund.getFee().getUnit())
-                            .label(display.getFee().getLabel())
+                            .label(feeDesc.getChooserLabel())
                             .description(feeDescription)
                             .build())
                     .estimatedReturn(ReturnDisplay.builder()
                             .value(fund.getReturns().getOrDefault(returnPeriod, 0.0))
-                            .unit(display.getReturns().getUnit())
+                            .unit(returnsDesc.getUnit())
                             .periodValue(returnPeriod.getPeriodValue())
                             .periodUnit(returnPeriod.getPeriodUnit())
-                            .label(display.getReturns().getLabel())
-                            .description(display.getReturns().getDescription())
+                            .label(returnsDesc.getChooserLabel())
+                            .description(returnsDesc.getChooserDescription())
                             .build())
                     .minInvestmentTimeframe(TimeframeDisplay.builder()
                             .value(fund.getMinInvestmentTimeframe().getValue())
                             .unit(fund.getMinInvestmentTimeframe().getUnit())
-                            .label(display.getTimeframe().getLabel())
-                            .description(display.getTimeframe().getDescription())
+                            .label(timeframeDesc.getChooserLabel())
+                            .description(timeframeDesc.getChooserDescription())
                             .build())
                     .riskIndicator(RiskDisplay.builder()
                             .value(fund.getRiskIndicator().getValue())
-                            .scaleMin(display.getRisk().getScaleMin())
-                            .scaleMax(display.getRisk().getScaleMax())
-                            .label(display.getRisk().getLabel())
-                            .description(display.getRisk().getDescription())
+                            .scaleMin(riskDesc.getScaleMin())
+                            .scaleMax(riskDesc.getScaleMax())
+                            .label(riskDesc.getChooserLabel())
+                            .description(riskDesc.getChooserDescription())
                             .build())
                     .build();
         }).toList();
 
         return FundChooserResponse.builder()
                 .disclaimer(config.getDisclaimer())
+                .footerDisclaimer(config.getFooterDisclaimer())
                 .performanceAsOf(config.getPerformanceAsOf())
                 .funds(items)
                 .build();
