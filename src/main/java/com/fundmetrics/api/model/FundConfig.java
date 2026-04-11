@@ -49,12 +49,13 @@ public class FundConfig {
     private String disclaimer;
 
     /**
-     * Extended footer disclaimer for the chooser page — covers RIAA certification,
-     * return-calculation methodology, and responsible-investment disclosures.
-     * Supports multiple paragraphs separated by {@code \n\n}.
+     * Ordered list of independently managed disclaimer paragraphs shown in the chooser
+     * page footer. Each note has a stable {@code key} so the frontend can conditionally
+     * show/hide or style individual paragraphs without parsing text, and individual
+     * paragraphs can be added or removed per config version without touching others.
      */
-    @Schema(description = "Extended footer disclaimer for the chooser page (RIAA certification, methodology notes, etc.)")
-    private String footerDisclaimer;
+    @Schema(description = "Ordered list of keyed disclaimer paragraphs for the chooser page footer")
+    private List<FooterNote> footerNotes;
 
     /**
      * Display metadata for each metric type (fee, returns, riskIndicator, etc.),

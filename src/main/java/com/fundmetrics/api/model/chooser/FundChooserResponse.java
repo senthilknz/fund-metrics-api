@@ -1,5 +1,6 @@
 package com.fundmetrics.api.model.chooser;
 
+import com.fundmetrics.api.model.FooterNote;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Value;
@@ -21,8 +22,8 @@ public class FundChooserResponse {
     @Schema(description = "Short legal disclaimer shown inline with fund data")
     String disclaimer;
 
-    @Schema(description = "Extended footer disclaimer — RIAA certification, methodology notes, and responsible-investment disclosures")
-    String footerDisclaimer;
+    @Schema(description = "Ordered list of keyed disclaimer paragraphs shown in the chooser page footer")
+    List<FooterNote> footerNotes;
 
     @Schema(description = "Date up to which performance figures are calculated", example = "2025-03-31")
     String performanceAsOf;

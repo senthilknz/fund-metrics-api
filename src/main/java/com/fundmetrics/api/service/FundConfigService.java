@@ -239,7 +239,7 @@ public class FundConfigService {
 
         return FundChooserResponse.builder()
                 .disclaimer(config.getDisclaimer())
-                .footerDisclaimer(config.getFooterDisclaimer())
+                .footerNotes(config.getFooterNotes())
                 .performanceAsOf(config.getPerformanceAsOf())
                 .funds(items)
                 .build();

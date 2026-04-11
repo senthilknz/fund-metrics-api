@@ -5,7 +5,24 @@
   "performanceAsOf": "2025-03-31",
   "dataSource": "Active Series",
   "disclaimer": "Past performance is not a reliable indication of future performance.",
-  "footerDisclaimer": "All our funds are invested in line with our sustainable investment policy. All Westpac KiwiSaver Scheme funds (except the Cash fund) have been certified by RIAA. RIAA does not currently assess cash funds as part of the Certification Program.\n\nReturn - past performance is not a reliable indication of future performance. Returns for any fund will vary and may be negative at times, which means your balance can be less than what you invested.\n\nRisk - the Default Balanced Fund started on 1 December 2021 and the High Growth Fund started on 25 September 2024. This means these funds do not have a full five-year return history. To calculate the risk indicator for the Default Balanced Fund, market index returns and actual returns have been used. To calculate the risk indicator for the High Growth Fund, only market index returns have been used. As a result, the risk indicators for these funds may provide a less reliable indication of the funds' potential future volatility.\n\nThe Responsible Investment Certification Program does not constitute financial product advice. Neither the Certification Symbol nor RIAA recommends to any person that any financial product is a suitable investment or that returns are guaranteed. Appropriate professional advice should be sought prior to making an investment decision. RIAA does not hold a Financial Advice Provider licence.",
+  "footerNotes": [
+    {
+      "key": "sustainability",
+      "text": "All our funds are invested in line with our sustainable investment policy. All Westpac KiwiSaver Scheme funds (except the Cash fund) have been certified by RIAA. RIAA does not currently assess cash funds as part of the Certification Program."
+    },
+    {
+      "key": "return",
+      "text": "Return - past performance is not a reliable indication of future performance. Returns for any fund will vary and may be negative at times, which means your balance can be less than what you invested."
+    },
+    {
+      "key": "risk",
+      "text": "Risk - the Default Balanced Fund started on 1 December 2021 and the High Growth Fund started on 25 September 2024. This means these funds do not have a full five-year return history. To calculate the risk indicator for the Default Balanced Fund, market index returns and actual returns have been used. To calculate the risk indicator for the High Growth Fund, only market index returns have been used. As a result, the risk indicators for these funds may provide a less reliable indication of the funds' potential future volatility."
+    },
+    {
+      "key": "riaa-certification",
+      "text": "The Responsible Investment Certification Program does not constitute financial product advice. Neither the Certification Symbol nor RIAA recommends to any person that any financial product is a suitable investment or that returns are guaranteed. Appropriate professional advice should be sought prior to making an investment decision. RIAA does not hold a Financial Advice Provider licence."
+    }
+  ],
   "metricDescriptions": {
     "fee": {
       "label": "Fee",

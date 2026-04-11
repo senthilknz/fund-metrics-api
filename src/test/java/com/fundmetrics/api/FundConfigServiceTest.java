@@ -128,9 +128,17 @@ class FundConfigServiceTest {
     }
 
     @Test
-    void toChooserResponse_hasFooterDisclaimer() {
+    void toChooserResponse_hasFooterNotes() {
         FundChooserResponse response = fundConfigService.toChooserResponse();
-        assertThat(response.getFooterDisclaimer()).contains("RIAA");
+        assertThat(response.getFooterNotes()).isNotEmpty();
+        assertThat(response.getFooterNotes()).extracting("key")
+                .contains("sustainability", "return", "riaa-certification");
+    }
+
+    @Test
+    void toChooserResponse_v2HasRiskFooterNote() {
+        FundChooserResponse response = fundConfigService.toChooserResponse();
+        assertThat(response.getFooterNotes()).extracting("key").contains("risk");
     }
 
     @Test
