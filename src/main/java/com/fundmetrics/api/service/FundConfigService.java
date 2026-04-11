@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -53,6 +54,7 @@ import java.util.List;
 public class FundConfigService {
 
     private static final String CONFIG_PATTERN = "classpath:fund-configs/funds-config-*.json";
+    static final ZoneId NZT = ZoneId.of("Pacific/Auckland");
 
     private final ResourcePatternResolver resourcePatternResolver;
     private final ObjectMapper objectMapper;
@@ -123,9 +125,9 @@ public class FundConfigService {
      * <p>Runs automatically at midnight so a version deployed in advance (with a future
      * {@code effectiveFrom}) activates on the correct date without any further deployment.
      */
-    @Scheduled(cron = "0 0 0 * * *")
+    @Scheduled(cron = "0 0 0 * * *", zone = "Pacific/Auckland")
     public void refreshActiveConfig() {
-        LocalDate today = LocalDate.now();
+        LocalDate today = LocalDate.now(NZT);
         FundConfig resolved = configHistory.stream()
                 .filter(c -> !c.getEffectiveFrom().isAfter(today))
                 .reduce((first, second) -> second)
