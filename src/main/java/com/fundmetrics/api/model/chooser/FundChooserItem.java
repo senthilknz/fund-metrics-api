@@ -1,5 +1,6 @@
 package com.fundmetrics.api.model.chooser;
 
+import com.fundmetrics.api.model.TooltipLink;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Value;
@@ -78,6 +79,10 @@ public class FundChooserItem {
         @Schema(description = "Tooltip / sub-label describing the return figure",
                 example = "Estimated average annual return over 5 years")
         String description;
+
+        @Schema(description = "Tooltip body text shown on ⓘ icon tap",
+                example = "Average annual return is over five years after deducting annual fund charges but before tax.")
+        String tooltip;
     }
 
     @Schema(description = "Recommended minimum investment timeframe with co-located display strings")
@@ -117,5 +122,12 @@ public class FundChooserItem {
         @Schema(description = "Tooltip / sub-label describing what the indicator means",
                 example = "How much the fund goes up and down")
         String description;
+
+        @Schema(description = "Tooltip body text shown on ⓘ icon tap",
+                example = "How much the fund goes up and down in value (i.e. amount of volatility).")
+        String tooltip;
+
+        @Schema(description = "Optional link appended to the tooltip, pointing to the PDS", nullable = true)
+        TooltipLink tooltipLink;
     }
 }

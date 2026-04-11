@@ -34,7 +34,8 @@
       "description": "Estimated average annual return over 5 years",
       "unit": "%",
       "periods": ["3months","6months","1year","3years","5years","10years"],
-      "chooserPeriod": "5years"
+      "chooserPeriod": "5years",
+      "tooltip": "Average annual return is over five years after deducting annual fund charges but before tax to 31 December 2025."
     },
     "minInvestmentTimeframe": {
       "label": "Time",
@@ -46,7 +47,12 @@
       "description": "How much the fund goes up and down",
       "scale": "1 (lowest) to 7 (highest)",
       "scaleMin": 1,
-      "scaleMax": 7
+      "scaleMax": 7,
+      "tooltip": "How much the fund goes up and down in value (i.e. amount of volatility). With more risk comes the potential for greater returns over time. Find out more about how the risk indicator is calculated in the Westpac Active Series Product Disclosure Statement.",
+      "tooltipLink": {
+        "text": "Westpac Active Series Product Disclosure Statement",
+        "url": "https://www.westpac.co.nz/kiwisaver/active-series/pds/"
+      }
     }
   },
   "funds": [
