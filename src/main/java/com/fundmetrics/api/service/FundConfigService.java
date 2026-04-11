@@ -11,6 +11,7 @@ import com.fundmetrics.api.model.chooser.FundChooserItem.RiskDisplay;
 import com.fundmetrics.api.model.chooser.FundChooserItem.TimeframeDisplay;
 import com.fundmetrics.api.model.chooser.FundChooserResponse;
 import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.ResourcePatternResolver;
@@ -52,6 +53,7 @@ import java.util.List;
  */
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class FundConfigService {
 
     private static final String CONFIG_PATTERN = "classpath:fund-configs/funds-config-*.json";
@@ -68,17 +70,6 @@ public class FundConfigService {
      * and the request thread always see a consistent value without synchronisation overhead.
      */
     private volatile FundConfig activeConfig;
-
-    /**
-     * Constructs the service with required Spring infrastructure dependencies.
-     *
-     * @param resourcePatternResolver resolves classpath resource patterns
-     * @param objectMapper            deserialises JSON config files into {@link FundConfig} objects
-     */
-    public FundConfigService(ResourcePatternResolver resourcePatternResolver, ObjectMapper objectMapper) {
-        this.resourcePatternResolver = resourcePatternResolver;
-        this.objectMapper = objectMapper;
-    }
 
     /**
      * Initialises the service on application startup: loads all embedded config files
