@@ -25,12 +25,15 @@ class FundTest {
         risk.setValue(4);
         risk.setLabel("Medium");
 
+        FundReturns returns = new FundReturns();
+        returns.setValues(Map.of(ReturnPeriod.FIVE_YEARS, 6.33, ReturnPeriod.ONE_YEAR, 13.11));
+
         fund = new Fund();
         fund.setId("growth");
         fund.setName("Growth Fund");
         fund.setDescription("Higher long-term capital growth.");
         fund.setFee(fee);
-        fund.setReturns(Map.of(ReturnPeriod.FIVE_YEARS, 6.33, ReturnPeriod.ONE_YEAR, 13.11));
+        fund.setReturns(returns);
         fund.setMinInvestmentTimeframe(timeframe);
         fund.setRiskIndicator(risk);
     }
@@ -41,8 +44,8 @@ class FundTest {
         assertThat(fund.getName()).isEqualTo("Growth Fund");
         assertThat(fund.getDescription()).isEqualTo("Higher long-term capital growth.");
         assertThat(fund.getFee().getAnnualFundCharge()).isEqualTo(0.85);
-        assertThat(fund.getReturns().get(ReturnPeriod.FIVE_YEARS)).isEqualTo(6.33);
-        assertThat(fund.getReturns().get(ReturnPeriod.ONE_YEAR)).isEqualTo(13.11);
+        assertThat(fund.getReturns().getValues().get(ReturnPeriod.FIVE_YEARS)).isEqualTo(6.33);
+        assertThat(fund.getReturns().getValues().get(ReturnPeriod.ONE_YEAR)).isEqualTo(13.11);
         assertThat(fund.getMinInvestmentTimeframe().getValue()).isEqualTo(10);
         assertThat(fund.getRiskIndicator().getValue()).isEqualTo(4);
     }
@@ -64,7 +67,9 @@ class FundTest {
         other.setName("Growth Fund");
         other.setDescription("Higher long-term capital growth.");
         other.setFee(fee);
-        other.setReturns(Map.of(ReturnPeriod.FIVE_YEARS, 6.33, ReturnPeriod.ONE_YEAR, 13.11));
+        FundReturns otherReturns = new FundReturns();
+        otherReturns.setValues(Map.of(ReturnPeriod.FIVE_YEARS, 6.33, ReturnPeriod.ONE_YEAR, 13.11));
+        other.setReturns(otherReturns);
         other.setMinInvestmentTimeframe(tf);
         other.setRiskIndicator(risk);
 

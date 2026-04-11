@@ -55,8 +55,10 @@
       "name": "Growth Fund",
       "description": "Higher long-term capital growth. Significant short-term fluctuations expected. Predominantly growth assets.",
       "fee": { "annualFundCharge": 0.85, "unit": "%" },
-      "returns": { "3months": 1.92, "6months": 8.74, "1year": 13.11, "3years": 12.85, "5years": 6.33, "10years": 7.88 },
-      "returnsTooltip": "Average annual return is over five years after deducting annual fund charges but before tax to 31 December 2025.",
+      "returns": {
+        "values": { "3months": 1.92, "6months": 8.74, "1year": 13.11, "3years": 12.85, "5years": 6.33, "10years": 7.88 },
+        "tooltip": "Average annual return is over five years after deducting annual fund charges but before tax to 31 December 2025."
+      },
       "minInvestmentTimeframe": { "value": 10, "unit": "years" },
       "riskIndicator": {
         "value": 4,
@@ -73,8 +75,10 @@
       "name": "Balanced Fund",
       "description": "Blend of growth and income assets. Moderate growth with some downside protection.",
       "fee": { "annualFundCharge": 0.80, "unit": "%" },
-      "returns": { "3months": 1.54, "6months": 7.10, "1year": 11.22, "3years": 10.93, "5years": 5.04, "10years": 6.61 },
-      "returnsTooltip": "Average annual return is over five years after deducting annual fund charges but before tax to 31 December 2025.",
+      "returns": {
+        "values": { "3months": 1.54, "6months": 7.10, "1year": 11.22, "3years": 10.93, "5years": 5.04, "10years": 6.61 },
+        "tooltip": "Average annual return is over five years after deducting annual fund charges but before tax to 31 December 2025."
+      },
       "minInvestmentTimeframe": { "value": 7, "unit": "years" },
       "riskIndicator": {
         "value": 4,
@@ -91,8 +95,10 @@
       "name": "Moderate Fund",
       "description": "Income-tilted with some growth exposure. Shorter timeframe or lower volatility tolerance.",
       "fee": { "annualFundCharge": 0.70, "unit": "%" },
-      "returns": { "3months": 1.05, "6months": 5.21, "1year": 8.97, "3years": 8.80, "5years": 3.81, "10years": 5.19 },
-      "returnsTooltip": "Average annual return is over five years after deducting annual fund charges but before tax to 31 December 2025.",
+      "returns": {
+        "values": { "3months": 1.05, "6months": 5.21, "1year": 8.97, "3years": 8.80, "5years": 3.81, "10years": 5.19 },
+        "tooltip": "Average annual return is over five years after deducting annual fund charges but before tax to 31 December 2025."
+      },
       "minInvestmentTimeframe": { "value": 5, "unit": "years" },
       "riskIndicator": {
         "value": 4,
@@ -109,8 +115,10 @@
       "name": "Conservative Fund",
       "description": "Primarily income assets. Short timeframe or capital preservation focus.",
       "fee": { "annualFundCharge": 0.70, "unit": "%" },
-      "returns": { "3months": 0.55, "6months": 3.42, "1year": 6.78, "3years": 6.65, "5years": 2.60, "10years": 3.74 },
-      "returnsTooltip": "Average annual return is over five years after deducting annual fund charges but before tax to 31 December 2025.",
+      "returns": {
+        "values": { "3months": 0.55, "6months": 3.42, "1year": 6.78, "3years": 6.65, "5years": 2.60, "10years": 3.74 },
+        "tooltip": "Average annual return is over five years after deducting annual fund charges but before tax to 31 December 2025."
+      },
       "minInvestmentTimeframe": { "value": 3, "unit": "years" },
       "riskIndicator": {
         "value": 3,

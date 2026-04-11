@@ -4,8 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
-import java.util.Map;
-
 /**
  * Represents a single Active Series managed fund with its associated metrics.
  *
@@ -35,13 +33,12 @@ public class Fund {
     private FundFee fee;
 
     /**
-     * Historical percentage returns keyed by period label.
-     * Standard periods: {@code 3months}, {@code 6months}, {@code 1year},
-     * {@code 3years}, {@code 5years}, {@code 10years}.
-     * Periods of 3 years and longer are average annual returns.
+     * Return figures and fund-specific tooltip copy for the returns card.
+     * Bundles period values, tooltip text, and an optional link together so the
+     * fund is self-describing — no detached sibling fields needed on the parent.
      */
-    @Schema(description = "Percentage returns keyed by period. Values for 3 years and longer are average annual returns.")
-    private Map<ReturnPeriod, Double> returns;
+    @Schema(description = "Return values keyed by period, with fund-specific tooltip copy")
+    private FundReturns returns;
 
     /** Recommended minimum period to stay invested to ride out volatility. */
     @Schema(description = "Recommended minimum investment timeframe to achieve the fund's objective")
@@ -50,20 +47,4 @@ public class Fund {
     /** Risk/return profile on the standard 1 (lowest) to 7 (highest) scale. */
     @Schema(description = "Risk indicator on a 1 (lowest) to 7 (highest) scale")
     private RiskIndicator riskIndicator;
-
-    /**
-     * Fund-specific tooltip body text shown on the ⓘ icon of the returns card.
-     * Allows each fund to carry distinct return explanations (e.g. funds without a
-     * full 5-year history need different copy to funds with a complete track record).
-     */
-    @Schema(description = "Fund-specific tooltip body for the returns card", nullable = true)
-    private String returnsTooltip;
-
-    /**
-     * Optional link appended to the fund-specific returns tooltip.
-     * Most funds leave this null; used when the copy needs to direct investors
-     * to a specific page (e.g. a comparison tool for newer funds).
-     */
-    @Schema(description = "Fund-specific tooltip link for the returns card", nullable = true)
-    private TooltipLink returnsTooltipLink;
 }

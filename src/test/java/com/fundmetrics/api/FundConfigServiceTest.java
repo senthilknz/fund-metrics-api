@@ -76,7 +76,8 @@ class FundConfigServiceTest {
                     assertThat(fund.getId()).isNotBlank();
                     assertThat(fund.getName()).isNotBlank();
                     assertThat(fund.getFee()).isNotNull();
-                    assertThat(fund.getReturns()).isNotEmpty();
+                    assertThat(fund.getReturns()).isNotNull();
+                    assertThat(fund.getReturns().getValues()).isNotEmpty();
                     assertThat(fund.getMinInvestmentTimeframe()).isNotNull();
                     assertThat(fund.getRiskIndicator()).isNotNull();
                 })
@@ -271,7 +272,9 @@ class FundConfigServiceTest {
         fee.setAnnualFundCharge(0.50);
         fee.setUnit("%");
         fund.setFee(fee);
-        fund.setReturns(java.util.Map.of(ReturnPeriod.ONE_YEAR, 5.0)); // no 5-year entry
+        com.fundmetrics.api.model.FundReturns fundReturns = new com.fundmetrics.api.model.FundReturns();
+        fundReturns.setValues(java.util.Map.of(ReturnPeriod.ONE_YEAR, 5.0)); // no 5-year entry
+        fund.setReturns(fundReturns);
         com.fundmetrics.api.model.InvestmentTimeframe tf = new com.fundmetrics.api.model.InvestmentTimeframe();
         tf.setValue(3);
         tf.setUnit("years");

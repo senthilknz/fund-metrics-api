@@ -2,6 +2,7 @@ package com.fundmetrics.api;
 
 import com.fundmetrics.api.controller.FundController;
 import com.fundmetrics.api.model.*;
+import com.fundmetrics.api.model.FundReturns;
 import com.fundmetrics.api.model.chooser.FundChooserItem;
 import com.fundmetrics.api.model.chooser.FundChooserResponse;
 import com.fundmetrics.api.service.FundConfigService;
@@ -71,7 +72,9 @@ class FundControllerTest {
         fee.setAnnualFundCharge(0.85);
         fee.setUnit("%");
         growth.setFee(fee);
-        growth.setReturns(Map.of(ReturnPeriod.ONE_YEAR, growth1yr, ReturnPeriod.THREE_YEARS, 13.50));
+        FundReturns fundReturns = new FundReturns();
+        fundReturns.setValues(Map.of(ReturnPeriod.ONE_YEAR, growth1yr, ReturnPeriod.THREE_YEARS, 13.50));
+        growth.setReturns(fundReturns);
         InvestmentTimeframe timeframe = new InvestmentTimeframe();
         timeframe.setValue(7);
         timeframe.setUnit("years");
