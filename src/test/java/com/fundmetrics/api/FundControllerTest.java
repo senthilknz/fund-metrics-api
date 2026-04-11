@@ -47,7 +47,7 @@ class FundControllerTest {
     @BeforeEach
     void setUp() {
         v1Config = buildConfig("1.0.0", LocalDate.of(2025, 1, 1), Instant.parse("2025-01-01T00:00:00Z"), 12.49);
-        v2Config = buildConfig("2.0.0", LocalDate.of(2025, 4, 1), Instant.parse("2025-04-01T00:00:00Z"), 13.11);
+        v2Config = buildConfig("2025.04.01", LocalDate.of(2025, 4, 1), Instant.parse("2025-04-01T00:00:00Z"), 13.11);
     }
 
     private FundConfig buildConfig(String version, LocalDate effectiveFrom, Instant publishedAt, double growth1yr) {
@@ -94,7 +94,7 @@ class FundControllerTest {
 
         mockMvc.perform(get("/api/v1/funds").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.version").value("2.0.0"))
+                .andExpect(jsonPath("$.version").value("2025.04.01"))
                 .andExpect(jsonPath("$.funds[0].id").value("growth"));
     }
 
@@ -113,7 +113,7 @@ class FundControllerTest {
 
         mockMvc.perform(get("/api/v1/funds").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(header().string("ETag", "\"2.0.0\""));
+                .andExpect(header().string("ETag", "\"2025.04.01\""));
     }
 
     @Test
@@ -123,7 +123,7 @@ class FundControllerTest {
         // Client sends the ETag it received on the previous request.
         mockMvc.perform(get("/api/v1/funds")
                         .accept(MediaType.APPLICATION_JSON)
-                        .header("If-None-Match", "\"2.0.0\""))
+                        .header("If-None-Match", "\"2025.04.01\""))
                 .andExpect(status().isNotModified());
     }
 
@@ -136,7 +136,7 @@ class FundControllerTest {
                         .accept(MediaType.APPLICATION_JSON)
                         .header("If-None-Match", "\"1.0.0\""))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.version").value("2.0.0"));
+                .andExpect(jsonPath("$.version").value("2025.04.01"));
     }
 
     @Test
@@ -231,7 +231,7 @@ class FundControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(2)))
                 .andExpect(jsonPath("$[0].version").value("1.0.0"))
-                .andExpect(jsonPath("$[1].version").value("2.0.0"));
+                .andExpect(jsonPath("$[1].version").value("2025.04.01"));
     }
 
     // -------------------------------------------------------------------------
@@ -257,7 +257,7 @@ class FundControllerTest {
                         .param("date", "2025-04-01")
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.version").value("2.0.0"));
+                .andExpect(jsonPath("$.version").value("2025.04.01"));
     }
 
     @Test

@@ -17,7 +17,7 @@ class FundConfigTest {
     @BeforeEach
     void setUp() {
         config = new FundConfig();
-        config.setVersion("2.0.0");
+        config.setVersion("2025.04.01");
         config.setEffectiveFrom(LocalDate.of(2025, 4, 1));
         config.setPublishedAt(Instant.parse("2025-04-01T00:00:00Z"));
         config.setPerformanceAsOf("2025-03-31");
@@ -35,7 +35,7 @@ class FundConfigTest {
 
     @Test
     void gettersReturnCorrectValues() {
-        assertThat(config.getVersion()).isEqualTo("2.0.0");
+        assertThat(config.getVersion()).isEqualTo("2025.04.01");
         assertThat(config.getEffectiveFrom()).isEqualTo(LocalDate.of(2025, 4, 1));
         assertThat(config.getPublishedAt()).isEqualTo(Instant.parse("2025-04-01T00:00:00Z"));
         assertThat(config.getPerformanceAsOf()).isEqualTo("2025-03-31");
@@ -49,7 +49,7 @@ class FundConfigTest {
     @Test
     void equals_sameConfig_areEqual() {
         FundConfig other = new FundConfig();
-        other.setVersion("2.0.0");
+        other.setVersion("2025.04.01");
         other.setEffectiveFrom(LocalDate.of(2025, 4, 1));
         other.setPublishedAt(Instant.parse("2025-04-01T00:00:00Z"));
         other.setPerformanceAsOf("2025-03-31");
@@ -71,7 +71,7 @@ class FundConfigTest {
     @Test
     void hashCode_equalObjects_haveSameHashCode() {
         FundConfig other = new FundConfig();
-        other.setVersion("2.0.0");
+        other.setVersion("2025.04.01");
         other.setEffectiveFrom(LocalDate.of(2025, 4, 1));
         other.setPublishedAt(Instant.parse("2025-04-01T00:00:00Z"));
         other.setPerformanceAsOf("2025-03-31");
@@ -84,6 +84,6 @@ class FundConfigTest {
 
     @Test
     void toString_containsVersion() {
-        assertThat(config.toString()).contains("2.0.0");
+        assertThat(config.toString()).contains("2025.04.01");
     }
 }

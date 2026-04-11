@@ -100,7 +100,7 @@ class RequestResponseLoggingFilterTest {
     @Test
     void doFilterInternal_postRequestIsLogged_activate() throws Exception {
         // POST with request body exercises the request-body logging path
-        mockMvc.perform(post("/api/v1/funds/activate").param("version", "2.0.0"))
+        mockMvc.perform(post("/api/v1/funds/activate").param("version", "2025.04.01"))
                 .andExpect(status().isOk());
     }
 

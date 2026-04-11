@@ -25,28 +25,28 @@ class FundConfigServiceTest {
 
     @BeforeEach
     void ensureV2IsActive() {
-        fundConfigService.forceActivateVersion("2.0.0");
+        fundConfigService.forceActivateVersion("2025.04.01");
     }
 
     @Test
     void configFileLoads() {
         List<FundConfig> history = fundConfigService.getHistory();
         assertThat(history).hasSize(1);
-        assertThat(history.get(0).getVersion()).isEqualTo("2.0.0");
+        assertThat(history.get(0).getVersion()).isEqualTo("2025.04.01");
     }
 
     @Test
     void configIsActiveOnOrAfterEffectiveDate() {
         FundConfig config = fundConfigService.resolveConfigForDate(LocalDate.of(2025, 4, 1));
         assertThat(config).isNotNull();
-        assertThat(config.getVersion()).isEqualTo("2.0.0");
+        assertThat(config.getVersion()).isEqualTo("2025.04.01");
     }
 
     @Test
     void configIsActiveAfterEffectiveDate() {
         FundConfig config = fundConfigService.resolveConfigForDate(LocalDate.of(2025, 12, 31));
         assertThat(config).isNotNull();
-        assertThat(config.getVersion()).isEqualTo("2.0.0");
+        assertThat(config.getVersion()).isEqualTo("2025.04.01");
     }
 
     @Test
@@ -57,9 +57,9 @@ class FundConfigServiceTest {
 
     @Test
     void forceActivateVersionSwitchesToV2() {
-        boolean result = fundConfigService.forceActivateVersion("2.0.0");
+        boolean result = fundConfigService.forceActivateVersion("2025.04.01");
         assertThat(result).isTrue();
-        assertThat(fundConfigService.getActiveConfig().getVersion()).isEqualTo("2.0.0");
+        assertThat(fundConfigService.getActiveConfig().getVersion()).isEqualTo("2025.04.01");
     }
 
     @Test
