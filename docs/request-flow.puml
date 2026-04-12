@@ -44,7 +44,7 @@ participant "Logging Filter"  as LOG
 participant "FundController"  as CTRL
 participant "FundConfigService" as SVC
 participant "Config Files\n(classpath JAR)" as CFG
-participant "Midnight\nScheduler" as SCH
+participant "TaskScheduler\n+ Midnight Cron" as SCH
 
 ' ─────────────────────────────────────────────
 '  Startup
@@ -65,16 +65,20 @@ end note
 ' ─────────────────────────────────────────────
 '  Midnight tick
 ' ─────────────────────────────────────────────
-== Every Midnight NZT (automatic activation) ==
+== Automatic Activation (two complementary paths) ==
 
-SCH  ->  SVC : @Scheduled(cron="0 * * * * *", zone="Pacific/Auckland")\nrefreshActiveConfig() — every minute
-SVC  ->  SVC : re-evaluate: latest where effectiveFrom ≤ LocalDateTime.now(NZT)
-SVC  ->  SVC : activeConfig = funds-config-2025.07.01\n(if effectiveFrom date-time has arrived)
+SCH  ->  SVC : [Primary] TaskScheduler one-time task\nfires at exacteffectiveFrom instant (NZT)
+SVC  ->  SVC : refreshActiveConfig()\nactiveConfig = funds-config-2025.07.01
+SVC  ->  SCH : scheduleNextActivation()\n— arms task for next future config
+
+SCH  ->  SVC : [Safety net] @Scheduled(cron="0 0 0 * * *", zone="Pacific/Auckland")\ndailySafetyCheck() — every midnight
+SVC  ->  SVC : re-evaluate and reschedule\n(handles restarts, missed tasks, clock corrections)
 
 note over SCH, SVC
+  Primary path fires exactly once at the specified NZT date-time.
+  Zero unnecessary firings between quarterly updates.
+  Daily midnight cron is a fallback — not the primary trigger.
   No deployment or manual step required.
-  Activates within 1 minute of the specified NZT time.
-  Use T00:00:00 for midnight, or e.g. T09:00:00 for 9am.
 end note
 
 ' ─────────────────────────────────────────────

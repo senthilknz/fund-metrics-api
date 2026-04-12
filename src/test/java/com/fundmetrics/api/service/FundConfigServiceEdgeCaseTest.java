@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.ResourcePatternResolver;
+import org.springframework.scheduling.TaskScheduler;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDate;
@@ -28,6 +29,7 @@ class FundConfigServiceEdgeCaseTest {
 
     private final ObjectMapper objectMapper = new ObjectMapper()
             .registerModule(new JavaTimeModule());
+    private final TaskScheduler taskScheduler = mock(TaskScheduler.class);
 
     // -------------------------------------------------------------------------
     // loadAllConfigs() — error handling
@@ -58,7 +60,7 @@ class FundConfigServiceEdgeCaseTest {
         when(mockResolver.getResources(anyString()))
                 .thenReturn(new Resource[]{badResource, goodResource});
 
-        FundConfigService service = new FundConfigService(mockResolver, objectMapper);
+        FundConfigService service = new FundConfigService(mockResolver, objectMapper, taskScheduler);
         service.init();
 
         // Bad resource is skipped; only the valid one is loaded
@@ -71,7 +73,7 @@ class FundConfigServiceEdgeCaseTest {
         ResourcePatternResolver mockResolver = mock(ResourcePatternResolver.class);
         when(mockResolver.getResources(anyString())).thenReturn(new Resource[]{});
 
-        FundConfigService service = new FundConfigService(mockResolver, objectMapper);
+        FundConfigService service = new FundConfigService(mockResolver, objectMapper, taskScheduler);
         service.init();
 
         assertThat(service.getHistory()).isEmpty();
@@ -87,7 +89,7 @@ class FundConfigServiceEdgeCaseTest {
         ResourcePatternResolver mockResolver = mock(ResourcePatternResolver.class);
         when(mockResolver.getResources(anyString())).thenReturn(new Resource[]{});
 
-        FundConfigService service = new FundConfigService(mockResolver, objectMapper);
+        FundConfigService service = new FundConfigService(mockResolver, objectMapper, taskScheduler);
         service.init();
 
         // No configs loaded, so no active config
@@ -99,7 +101,7 @@ class FundConfigServiceEdgeCaseTest {
         ResourcePatternResolver mockResolver = mock(ResourcePatternResolver.class);
         when(mockResolver.getResources(anyString())).thenReturn(new Resource[]{});
 
-        FundConfigService service = new FundConfigService(mockResolver, objectMapper);
+        FundConfigService service = new FundConfigService(mockResolver, objectMapper, taskScheduler);
         service.init();
 
         // Inject a config with a far-future effectiveFrom
@@ -122,7 +124,7 @@ class FundConfigServiceEdgeCaseTest {
         ResourcePatternResolver mockResolver = mock(ResourcePatternResolver.class);
         when(mockResolver.getResources(anyString())).thenReturn(new Resource[]{});
 
-        FundConfigService service = new FundConfigService(mockResolver, objectMapper);
+        FundConfigService service = new FundConfigService(mockResolver, objectMapper, taskScheduler);
         service.init();
 
         FundConfig config = new FundConfig();
@@ -140,7 +142,7 @@ class FundConfigServiceEdgeCaseTest {
         ResourcePatternResolver mockResolver = mock(ResourcePatternResolver.class);
         when(mockResolver.getResources(anyString())).thenReturn(new Resource[]{});
 
-        FundConfigService service = new FundConfigService(mockResolver, objectMapper);
+        FundConfigService service = new FundConfigService(mockResolver, objectMapper, taskScheduler);
         service.init();
 
         FundConfig config = new FundConfig();

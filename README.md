@@ -56,7 +56,8 @@ src/main/resources/fund-configs/
 
 - All config files are packaged into the JAR at build time.
 - On startup, all files are loaded and sorted by `effectiveFrom`.
-- The scheduler re-evaluates the active version **every minute** (NZT) — a config with `effectiveFrom: "2025-07-01T09:00:00"` activates within one minute of 9:00 am NZT on 1 July 2025.
+- At startup a **precise one-time `TaskScheduler` task** is armed to fire at the exact `effectiveFrom` instant of the next future config. When it fires, it activates the new config and immediately arms the task for the one after that. Zero unnecessary firings between quarterly updates.
+- A **daily midnight `@Scheduled` cron** re-evaluates and re-schedules as a safety net — it handles the edge case where the app restarts after a missed activation or a JVM clock correction cancels the one-time task.
 - You can **deploy a new config file weeks before its activation date** — the previous version keeps serving until the specified NZT date-time, then the new one activates automatically with no deployment or manual step required.
 
 > **Why CalVer?** Fund configs are tied to specific effective dates, not to feature releases. A version like `2025.07.01` is self-documenting — anyone reading it immediately knows when it goes live, without cross-referencing a changelog.
@@ -86,8 +87,8 @@ Each config file is a self-contained JSON document. Below is a minimal annotated
   "version": "2025.07.01",
 
   // NZT date-time from which this config becomes the active version.
-  // Use T00:00:00 for midnight. Use a specific time (e.g. T09:00:00) for a
-  // precise activation window — the scheduler checks every minute.
+  // A one-time TaskScheduler task fires at this exact instant.
+  // Use T00:00:00 for midnight or any specific time (e.g. T09:00:00).
   "effectiveFrom": "2025-07-01T00:00:00",
 
   // ISO-8601 timestamp of when this file was published.

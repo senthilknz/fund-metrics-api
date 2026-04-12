@@ -10,9 +10,10 @@ import org.springframework.scheduling.annotation.EnableScheduling;
  * <p>{@code @SpringBootApplication} enables component scanning, auto-configuration,
  * and property source loading for the {@code com.fundmetrics.api} package.
  *
- * <p>{@code @EnableScheduling} activates the Spring task scheduler so that
- * {@code @Scheduled} methods — such as the midnight config refresh in
- * {@link com.fundmetrics.api.service.FundConfigService} — are executed.
+ * <p>{@code @EnableScheduling} activates the Spring task scheduler required by
+ * {@link com.fundmetrics.api.service.FundConfigService}: a precise one-time
+ * {@code TaskScheduler} task fires at each future config's {@code effectiveFrom}
+ * instant, and a daily midnight {@code @Scheduled} cron acts as a safety net.
  */
 @SpringBootApplication
 @EnableScheduling

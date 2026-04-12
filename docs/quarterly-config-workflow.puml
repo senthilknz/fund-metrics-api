@@ -60,7 +60,7 @@ box "Environments" #F0FFF4
 end box
 
 participant "ServiceNow\n(SNOW)" as SNOW #F5F5F5
-participant "Midnight\nScheduler"  as SCH  #E3F2FD
+participant "TaskScheduler\n+ Midnight Cron" as SCH  #E3F2FD
 
 ' ─────────────────────────────────────────────
 '  Phase 1 — Request
@@ -190,11 +190,18 @@ end note
 ' ─────────────────────────────────────────────
 == Phase 9 · Automatic Activation (no manual step) ==
 
-SCH  ->  PROD : Scheduler fires <b>refreshActiveConfig()</b> every minute (NZT)\nAt 2025-07-01T00:00:00 NZT (or whichever time was set in effectiveFrom)
-PROD ->  PROD : 2025.07.01 becomes active\n<i>within 1 minute of the specified NZT time</i>
+SCH  ->  PROD : [Primary] TaskScheduler one-time task fires\nat exactly 2025-07-01T00:00:00 NZT (or whichever time was set)
+PROD ->  PROD : refreshActiveConfig()\n2025.07.01 becomes active immediately
+PROD ->  SCH  : scheduleNextActivation() — arms task for next quarter
 
 note over SCH, PROD #D5F5E3
   <b>No deployment. No manual intervention. No on-call required.</b>
+  ────────────────────────────────────────────────────────────────
+  Activation mechanism — two complementary paths:
+    1. TaskScheduler fires once at the exact effectiveFrom instant (NZT).
+       Zero unnecessary firings between quarterly updates.
+    2. Daily midnight @Scheduled cron acts as safety net —
+       recovers from missed tasks after restarts or clock corrections.
   ────────────────────────────────────────────────────────────────
   Full config endpoint (ETag/304 caching):
     Micro frontend sends:  GET /api/v1/funds  If-None-Match: "2025.04.01"
@@ -202,7 +209,7 @@ note over SCH, PROD #D5F5E3
     Subsequent calls:      304 Not Modified  (until next quarterly update)
   ────────────────────────────────────────────────────────────────
   effectiveFrom is a LocalDateTime (NZT). Use T00:00:00 for midnight
-  or any specific time e.g. T09:00:00. Scheduler checks every minute.
+  or any specific time e.g. T09:00:00.
   ────────────────────────────────────────────────────────────────
   Chooser endpoint (always 200, BFF shaped for fund selection page):
     Micro frontend sends:  GET /api/v1/funds/chooser

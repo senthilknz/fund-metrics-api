@@ -71,7 +71,8 @@ package "Spring Boot Application (fund-metrics-api)" {
     note right of SVC
       • Loads all config files at startup
       • Selects active config by effectiveFrom ≤ LocalDateTime.now(NZT)
-      • Refreshes active config every minute (NZT)
+      • Schedules precise one-time task at each future effectiveFrom instant
+      • Daily midnight cron as safety net (handles restarts / missed tasks)
       • Maps active config → chooser response (BFF)
       • forceActivateVersion() for emergency rollback
     end note
@@ -97,7 +98,8 @@ package "Spring Boot Application (fund-metrics-api)" {
     [RequestResponseLoggingFilter] as LOG
     [CorsConfig]                   as CORS
     [OpenApiConfig]                as OAS
-    [Scheduled minute tick\n(refreshActiveConfig)] as SCHED
+    [TaskScheduler\n(one-time precise task)] as SCHED
+    [Daily midnight cron\n(safety net)] as CRON
   }
 }
 
@@ -119,7 +121,8 @@ CHOOSER --> CITEM
 
 SVC  ..>  CFG1   : loads at startup
 SVC  ..>  CFG2   : loads at startup
-SCHED --> SVC    : triggers refreshActiveConfig()\nevery minute (NZT)
+SCHED --> SVC    : fires once at effectiveFrom instant\n→ refreshActiveConfig() + scheduleNextActivation()
+CRON  --> SVC    : daily midnight safety net\n→ refreshActiveConfig() + scheduleNextActivation()
 
 OPS  -->  CTRL   : POST /api/v1/funds/activate\n(emergency rollback)
 
