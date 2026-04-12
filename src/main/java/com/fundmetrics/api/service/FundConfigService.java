@@ -15,10 +15,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.ResourcePatternResolver;
+import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -27,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.ScheduledFuture;
 
 /**
  * Manages the lifecycle of versioned fund config files embedded in the application JAR.
@@ -35,24 +38,34 @@ import java.util.List;
  * <p>All {@code funds-config-*.json} files under {@code src/main/resources/fund-configs/}
  * are packaged into the JAR at build time and loaded on startup. Each file carries an
  * {@code effectiveFrom} date-time (NZT). The active config is always the latest version
- * whose {@code effectiveFrom} is not after now (NZT), resolved at startup and re-evaluated
- * every minute by the scheduler.
+ * whose {@code effectiveFrom} is not after now (NZT).
+ *
+ * <h2>Activation mechanism — two complementary paths</h2>
+ * <ol>
+ *   <li><strong>Precise one-time scheduling</strong> — on startup (and after each
+ *       activation), {@link #scheduleNextActivation()} finds the earliest future config
+ *       and schedules a single {@link TaskScheduler} task to fire at its exact
+ *       {@code effectiveFrom} instant. Zero unnecessary firings between quarterly updates.</li>
+ *   <li><strong>Daily midnight safety net</strong> — a midnight cron re-evaluates the
+ *       active config and reschedules the next activation. Ensures correctness after an
+ *       app restart, a clock correction, or any edge case that cancels the one-time task.</li>
+ * </ol>
  *
  * <h2>Quarterly update operational workflow</h2>
  * <ol>
  *   <li>Add {@code funds-config-2025.07.01.json} with
- *       {@code "effectiveFrom": "2025-07-01T00:00:00"} (or a specific time, e.g.
- *       {@code "2025-07-01T09:00:00"}) and the new return figures.</li>
+ *       {@code "effectiveFrom": "2025-07-01T00:00:00"} (midnight) or a specific time,
+ *       e.g. {@code "2025-07-01T09:00:00"} (9 am), and the new return figures.</li>
  *   <li>Commit and push — the pipeline builds and deploys the new JAR.
- *       This can be done weeks in advance of the activation date.</li>
+ *       This can be done weeks in advance.</li>
  *   <li>The app runs normally, still serving the previous version.</li>
- *   <li>At the specified NZT date-time, the minute scheduler automatically activates
- *       the new version — no further deployment, no manual intervention required.</li>
+ *   <li>At the specified NZT date-time, the one-time task fires and activates the new
+ *       version — no deployment, no manual intervention required.</li>
  * </ol>
  *
  * <h2>Emergency override</h2>
  * <p>{@link #forceActivateVersion(String)} overrides the active config in memory without
- * redeployment. Resets on the next restart or scheduler tick.
+ * redeployment. Resets on the next restart or midnight safety-net tick.
  */
 @Slf4j
 @Service
@@ -64,19 +77,26 @@ public class FundConfigService {
 
     private final ResourcePatternResolver resourcePatternResolver;
     private final ObjectMapper objectMapper;
+    private final TaskScheduler taskScheduler;
 
     /** Full history of all loaded configs, sorted ascending by {@code effectiveFrom}. */
     private List<FundConfig> configHistory = new ArrayList<>();
 
     /**
-     * The currently live config. Declared {@code volatile} so the midnight scheduler
-     * and the request thread always see a consistent value without synchronisation overhead.
+     * The currently live config. Declared {@code volatile} so the scheduler thread
+     * and request threads always see a consistent value without synchronisation overhead.
      */
     private volatile FundConfig activeConfig;
 
     /**
-     * Initialises the service on application startup: loads all embedded config files
-     * then resolves the initial active config based on today's date.
+     * The pending one-time activation task, kept so it can be cancelled and replaced
+     * when {@link #scheduleNextActivation()} is called again (e.g. after a safety-net tick).
+     */
+    private volatile ScheduledFuture<?> pendingActivation;
+
+    /**
+     * Initialises the service on application startup: loads all embedded config files,
+     * resolves the initial active config, then schedules the next future activation.
      *
      * @throws IOException if the classpath resource scan fails at the I/O level
      */
@@ -84,6 +104,7 @@ public class FundConfigService {
     public void init() throws IOException {
         loadAllConfigs();
         refreshActiveConfig();
+        scheduleNextActivation();
     }
 
     /**
@@ -117,11 +138,14 @@ public class FundConfigService {
      * Re-evaluates which config version should be active based on the current NZT date-time.
      * Selects the latest config whose {@code effectiveFrom} is not after now (NZT).
      *
-     * <p>Runs every minute so a version deployed in advance (with a future
-     * {@code effectiveFrom}) activates within one minute of the specified NZT date-time,
-     * with no further deployment or manual intervention required.
+     * <p>Called from three places:
+     * <ul>
+     *   <li>At startup via {@link #init()}</li>
+     *   <li>By the precise one-time {@link TaskScheduler} task at each config's
+     *       {@code effectiveFrom} instant</li>
+     *   <li>By the daily midnight safety-net cron</li>
+     * </ul>
      */
-    @Scheduled(cron = "0 * * * * *", zone = "Pacific/Auckland")
     public void refreshActiveConfig() {
         LocalDateTime now = LocalDateTime.now(NZT);
         FundConfig resolved = configHistory.stream()
@@ -131,10 +155,56 @@ public class FundConfigService {
 
         if (resolved != null) {
             this.activeConfig = resolved;
-            log.info("Active fund config refreshed: version={} effectiveFrom={}", resolved.getVersion(), resolved.getEffectiveFrom());
+            log.info("Active fund config set: version={} effectiveFrom={}", resolved.getVersion(), resolved.getEffectiveFrom());
         } else {
             log.warn("No fund config is effective as of now ({})", now);
         }
+    }
+
+    /**
+     * Daily midnight safety net. Re-evaluates the active config and reschedules the
+     * next precise activation task.
+     *
+     * <p>This is <em>not</em> the primary activation path — {@link #scheduleNextActivation()}
+     * handles that with a single precisely-timed task. The daily cron exists to recover
+     * from edge cases: app restart after a missed activation, JVM clock correction, or
+     * cancellation of the one-time task.
+     */
+    @Scheduled(cron = "0 0 0 * * *", zone = "Pacific/Auckland")
+    public void dailySafetyCheck() {
+        log.debug("Daily safety check: re-evaluating active config");
+        refreshActiveConfig();
+        scheduleNextActivation();
+    }
+
+    /**
+     * Schedules a single one-time task to fire at the {@code effectiveFrom} instant of
+     * the next future config version. Cancels any previously pending task first to
+     * prevent duplicate firings.
+     *
+     * <p>If no future config exists (all versions are already effective), this is a no-op.
+     * When the task fires, it activates the new config and immediately chains to schedule
+     * the one after that — so the activation of v3 automatically arms the task for v4.
+     */
+    void scheduleNextActivation() {
+        if (pendingActivation != null && !pendingActivation.isDone()) {
+            pendingActivation.cancel(false);
+        }
+
+        LocalDateTime now = LocalDateTime.now(NZT);
+        configHistory.stream()
+                .filter(c -> c.getEffectiveFrom().isAfter(now))
+                .min(Comparator.comparing(FundConfig::getEffectiveFrom))
+                .ifPresent(next -> {
+                    Instant when = next.getEffectiveFrom().atZone(NZT).toInstant();
+                    pendingActivation = taskScheduler.schedule(() -> {
+                        log.info("Precise activation trigger: version={}", next.getVersion());
+                        refreshActiveConfig();
+                        scheduleNextActivation();
+                    }, when);
+                    log.info("Scheduled precise activation: version={} at {} NZT",
+                            next.getVersion(), next.getEffectiveFrom());
+                });
     }
 
     /**
@@ -255,9 +325,9 @@ public class FundConfigService {
      * Intended for emergency ops rollback without redeployment.
      *
      * <p><strong>Warning:</strong> this override resets on the next application restart
-     * or midnight scheduler run.
+     * or daily safety-net tick.
      *
-     * @param version the version string to activate (e.g. {@code "1.0.0"})
+     * @param version the CalVer version string to activate (e.g. {@code "2025.04.01"})
      * @return {@code true} if the version was found and activated, {@code false} otherwise
      */
     public boolean forceActivateVersion(String version) {
