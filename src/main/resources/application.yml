@@ -9,7 +9,10 @@ server:
   port: 8080
 
 management:
+  server:
+    port: 8081          # management port is separate from the public API port (8080)
+                        # firewall 8081 to internal/ops network — 8080 has no activation capability
   endpoints:
     web:
       exposure:
-        include: health, info
+        include: health, info, fund-activate

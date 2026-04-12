@@ -316,8 +316,12 @@ Use at every stage (local, SYST, UAT, Prod).
 
 Force-activates a specific version in memory without redeploying. Buys time to prepare a proper fix.
 
+Available only on the **management port (8081)** — not exposed on the public API port.
+
 ```bash
-curl -X POST "https://fund-metrics-api.example.com/api/v1/funds/activate?version=2025.04.01"
+curl -X POST http://<host>:8081/actuator/fund-activate \
+  -H "Content-Type: application/json" \
+  -d '{"version": "2025.04.01"}'
 # { "success": true, "message": "Activated version: 2025.04.01" }
 ```
 
@@ -467,14 +471,18 @@ curl "http://localhost:8080/api/v1/funds/preview?date=2025-03-15"
 
 ---
 
-### `POST /api/v1/funds/activate?version=YYYY.MM.DD`
+## Emergency Rollback (management port only)
 
-Force-activates a specific version in memory. For emergency rollback only. Resets on next restart or midnight scheduler tick.
+The public API has no activation endpoint. Emergency version override is available exclusively on the management port (8081), which is firewalled to internal/ops access:
 
 ```bash
-curl -X POST "http://localhost:8080/api/v1/funds/activate?version=2025.04.01"
+curl -X POST http://localhost:8081/actuator/fund-activate \
+  -H "Content-Type: application/json" \
+  -d '{"version": "2025.04.01"}'
 # { "success": true, "message": "Activated version: 2025.04.01" }
 ```
+
+Resets on the next restart or midnight scheduler tick. See [Rollback Options](#rollback-options) for the full decision tree.
 
 ---
 

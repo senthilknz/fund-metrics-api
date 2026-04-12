@@ -98,10 +98,11 @@ class RequestResponseLoggingFilterTest {
     }
 
     @Test
-    void doFilterInternal_postRequestIsLogged_activate() throws Exception {
-        // POST with request body exercises the request-body logging path
-        mockMvc.perform(post("/api/v1/funds/activate").param("version", "2025.04.01"))
-                .andExpect(status().isOk());
+    void doFilterInternal_postRequestIsLogged() throws Exception {
+        // POST to any /api path exercises the request-body logging path in the filter.
+        // /activate no longer exists on the public API (moved to the management port actuator).
+        mockMvc.perform(post("/api/v1/funds/unknown-operation"))
+                .andExpect(status().isNotFound());
     }
 
     @Test

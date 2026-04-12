@@ -14,14 +14,16 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.List;
-import java.util.Map;
 
 /**
  * REST controller exposing fund metric endpoints under {@code /api/v1/funds}.
@@ -223,36 +225,4 @@ public class FundController {
         return config;
     }
 
-    /**
-     * Force-activates a specific config version in memory, overriding the normal
-     * date-based resolution. Intended for emergency ops rollback without redeployment.
-     *
-     * <p><strong>Note:</strong> this override is in-memory only and resets on the next
-     * application restart or midnight scheduler tick.
-     *
-     * @param version the version string to activate (e.g. {@code 1.0.0})
-     * @return a JSON body with {@code success: true} on success, or 404 if the version is unknown
-     */
-    @Operation(
-            summary = "Force-activate a config version",
-            description = "Overrides the active config to the specified version in memory. " +
-                          "Intended for emergency rollback without redeployment. " +
-                          "Resets on the next restart or midnight scheduler tick."
-    )
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Version activated successfully"),
-            @ApiResponse(responseCode = "404", description = "Version not found in loaded history",
-                    content = @Content)
-    })
-    @PostMapping("/activate")
-    public ResponseEntity<Map<String, Object>> forceActivateVersion(
-            @Parameter(description = "Version string to activate", example = "1.0.0", required = true)
-            @RequestParam("version") String version) {
-        boolean success = fundConfigService.forceActivateVersion(version);
-        if (!success) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("success", false, "message", "Version not found: " + version));
-        }
-        return ResponseEntity.ok(Map.of("success", true, "message", "Activated version: " + version));
-    }
 }

@@ -23,7 +23,6 @@ import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
@@ -281,30 +280,4 @@ class FundControllerTest {
                 .andExpect(status().isNotFound());
     }
 
-    // -------------------------------------------------------------------------
-    // POST /api/v1/funds/activate
-    // -------------------------------------------------------------------------
-
-    @Test
-    void forceActivate_returns200OnSuccess() throws Exception {
-        when(fundConfigService.forceActivateVersion("1.0.0")).thenReturn(true);
-
-        mockMvc.perform(post("/api/v1/funds/activate")
-                        .param("version", "1.0.0")
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.message").value(containsString("1.0.0")));
-    }
-
-    @Test
-    void forceActivate_returns404ForUnknownVersion() throws Exception {
-        when(fundConfigService.forceActivateVersion("99.0.0")).thenReturn(false);
-
-        mockMvc.perform(post("/api/v1/funds/activate")
-                        .param("version", "99.0.0")
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.success").value(false));
-    }
 }
