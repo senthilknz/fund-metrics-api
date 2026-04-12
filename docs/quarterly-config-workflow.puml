@@ -81,7 +81,7 @@ DEV ->  DEV : Add <b>funds-config-2025.07.01.json</b>\nSet version, effectiveFro
 note right of DEV #FFFDE7
   <b>Fields to update in the new file:</b>
   • version         → "2025.07.01"  (CalVer: YYYY.MM.DD)
-  • effectiveFrom   → "2025-07-01"
+  • effectiveFrom   → "2025-07-01T00:00:00"  (or e.g. T09:00:00 for 9am NZT)
   • publishedAt     → today's timestamp
   • performanceAsOf → last day of prev quarter
   • funds[*].returns.values → new figures from FM
@@ -190,8 +190,8 @@ end note
 ' ─────────────────────────────────────────────
 == Phase 9 · Automatic Activation (no manual step) ==
 
-SCH  ->  PROD : Midnight NZT on 2025-07-01\nScheduler fires <b>refreshActiveConfig()</b>
-PROD ->  PROD : 2025.07.01 becomes active
+SCH  ->  PROD : Scheduler fires <b>refreshActiveConfig()</b> every minute (NZT)\nAt 2025-07-01T00:00:00 NZT (or whichever time was set in effectiveFrom)
+PROD ->  PROD : 2025.07.01 becomes active\n<i>within 1 minute of the specified NZT time</i>
 
 note over SCH, PROD #D5F5E3
   <b>No deployment. No manual intervention. No on-call required.</b>
@@ -200,6 +200,9 @@ note over SCH, PROD #D5F5E3
     Micro frontend sends:  GET /api/v1/funds  If-None-Match: "2025.04.01"
     API responds:          200  ETag: "2025.07.01"  [new fund data]
     Subsequent calls:      304 Not Modified  (until next quarterly update)
+  ────────────────────────────────────────────────────────────────
+  effectiveFrom is a LocalDateTime (NZT). Use T00:00:00 for midnight
+  or any specific time e.g. T09:00:00. Scheduler checks every minute.
   ────────────────────────────────────────────────────────────────
   Chooser endpoint (always 200, BFF shaped for fund selection page):
     Micro frontend sends:  GET /api/v1/funds/chooser

@@ -16,6 +16,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -46,11 +47,11 @@ class FundControllerTest {
 
     @BeforeEach
     void setUp() {
-        v1Config = buildConfig("1.0.0", LocalDate.of(2025, 1, 1), Instant.parse("2025-01-01T00:00:00Z"), 12.49);
-        v2Config = buildConfig("2025.04.01", LocalDate.of(2025, 4, 1), Instant.parse("2025-04-01T00:00:00Z"), 13.11);
+        v1Config = buildConfig("1.0.0", LocalDateTime.of(2025, 1, 1, 0, 0), Instant.parse("2025-01-01T00:00:00Z"), 12.49);
+        v2Config = buildConfig("2025.04.01", LocalDateTime.of(2025, 4, 1, 0, 0), Instant.parse("2025-04-01T00:00:00Z"), 13.11);
     }
 
-    private FundConfig buildConfig(String version, LocalDate effectiveFrom, Instant publishedAt, double growth1yr) {
+    private FundConfig buildConfig(String version, LocalDateTime effectiveFrom, Instant publishedAt, double growth1yr) {
         FundConfig config = new FundConfig();
         config.setVersion(version);
         config.setEffectiveFrom(effectiveFrom);

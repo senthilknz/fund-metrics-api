@@ -48,18 +48,20 @@ Config files use **Calendar Versioning (CalVer)** — the filename and `version`
 
 ```
 src/main/resources/fund-configs/
-  funds-config-2025.04.01.json    ← effectiveFrom: 2025-04-01  (current)
-  funds-config-2025.07.01.json    ← effectiveFrom: 2025-07-01  (example next quarter)
+  funds-config-2025.04.01.json    ← effectiveFrom: 2025-04-01T00:00:00  (current)
+  funds-config-2025.07.01.json    ← effectiveFrom: 2025-07-01T09:00:00  (example — 9am activation)
 ```
 
-**The rule:** the active config is always the latest file whose `effectiveFrom` date is not after today.
+**The rule:** the active config is always the latest file whose `effectiveFrom` (NZT date-time) is not after the current NZT time.
 
 - All config files are packaged into the JAR at build time.
 - On startup, all files are loaded and sorted by `effectiveFrom`.
-- Every midnight NZT, the scheduler re-evaluates which version is active.
-- You can **deploy a new config file weeks before its activation date** — the old version keeps serving until midnight NZT on the `effectiveFrom` date, then the new one activates automatically with no further action required.
+- The scheduler re-evaluates the active version **every minute** (NZT) — a config with `effectiveFrom: "2025-07-01T09:00:00"` activates within one minute of 9:00 am NZT on 1 July 2025.
+- You can **deploy a new config file weeks before its activation date** — the previous version keeps serving until the specified NZT date-time, then the new one activates automatically with no deployment or manual step required.
 
 > **Why CalVer?** Fund configs are tied to specific effective dates, not to feature releases. A version like `2025.07.01` is self-documenting — anyone reading it immediately knows when it goes live, without cross-referencing a changelog.
+
+> **NZT convention:** `effectiveFrom` is always interpreted as a NZT (Pacific/Auckland) local date-time. There is no timezone suffix in the JSON value — the NZT context is applied by the scheduler. Use midnight (`T00:00:00`) when time-of-day precision is not needed.
 
 ### Diagrams
 
@@ -83,8 +85,10 @@ Each config file is a self-contained JSON document. Below is a minimal annotated
   // Used as the ETag value on the /funds endpoint.
   "version": "2025.07.01",
 
-  // The date from which this config becomes the active version (NZT midnight).
-  "effectiveFrom": "2025-07-01",
+  // NZT date-time from which this config becomes the active version.
+  // Use T00:00:00 for midnight. Use a specific time (e.g. T09:00:00) for a
+  // precise activation window — the scheduler checks every minute.
+  "effectiveFrom": "2025-07-01T00:00:00",
 
   // ISO-8601 timestamp of when this file was published.
   "publishedAt": "2025-06-15T00:00:00Z",
@@ -176,7 +180,7 @@ Each config file is a self-contained JSON document. Below is a minimal annotated
 | Field | What to set |
 |---|---|
 | `version` | Today's date in `YYYY.MM.DD` format, e.g. `"2025.07.01"` |
-| `effectiveFrom` | First day of the new quarter, e.g. `"2025-07-01"` |
+| `effectiveFrom` | NZT date-time to activate, e.g. `"2025-07-01T00:00:00"` (midnight) or `"2025-07-01T09:00:00"` (9am) |
 | `publishedAt` | Today's ISO timestamp, e.g. `"2025-06-15T00:00:00Z"` |
 | `performanceAsOf` | Last day of the period the returns cover, e.g. `"2025-06-30"` |
 | `funds[*].returns.values` | New return figures signed off by the fund manager |

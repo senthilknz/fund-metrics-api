@@ -4,7 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -18,7 +18,7 @@ class FundConfigTest {
     void setUp() {
         config = new FundConfig();
         config.setVersion("2025.04.01");
-        config.setEffectiveFrom(LocalDate.of(2025, 4, 1));
+        config.setEffectiveFrom(LocalDateTime.of(2025, 4, 1, 0, 0));
         config.setPublishedAt(Instant.parse("2025-04-01T00:00:00Z"));
         config.setPerformanceAsOf("2025-03-31");
         config.setDataSource("Active Series");
@@ -36,7 +36,7 @@ class FundConfigTest {
     @Test
     void gettersReturnCorrectValues() {
         assertThat(config.getVersion()).isEqualTo("2025.04.01");
-        assertThat(config.getEffectiveFrom()).isEqualTo(LocalDate.of(2025, 4, 1));
+        assertThat(config.getEffectiveFrom()).isEqualTo(LocalDateTime.of(2025, 4, 1, 0, 0));
         assertThat(config.getPublishedAt()).isEqualTo(Instant.parse("2025-04-01T00:00:00Z"));
         assertThat(config.getPerformanceAsOf()).isEqualTo("2025-03-31");
         assertThat(config.getDataSource()).isEqualTo("Active Series");
@@ -50,7 +50,7 @@ class FundConfigTest {
     void equals_sameConfig_areEqual() {
         FundConfig other = new FundConfig();
         other.setVersion("2025.04.01");
-        other.setEffectiveFrom(LocalDate.of(2025, 4, 1));
+        other.setEffectiveFrom(LocalDateTime.of(2025, 4, 1, 0, 0));
         other.setPublishedAt(Instant.parse("2025-04-01T00:00:00Z"));
         other.setPerformanceAsOf("2025-03-31");
         other.setDataSource("Active Series");
@@ -72,7 +72,7 @@ class FundConfigTest {
     void hashCode_equalObjects_haveSameHashCode() {
         FundConfig other = new FundConfig();
         other.setVersion("2025.04.01");
-        other.setEffectiveFrom(LocalDate.of(2025, 4, 1));
+        other.setEffectiveFrom(LocalDateTime.of(2025, 4, 1, 0, 0));
         other.setPublishedAt(Instant.parse("2025-04-01T00:00:00Z"));
         other.setPerformanceAsOf("2025-03-31");
         other.setDataSource("Active Series");

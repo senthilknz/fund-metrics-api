@@ -5,7 +5,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.time.Instant;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -20,16 +20,23 @@ import java.util.Map;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class FundConfig {
 
-    /** Semantic version of this config file (e.g. {@code 1.0.0}, {@code 2.0.0}). */
-    @Schema(description = "Semantic version of this config", example = "2.0.0")
+    /** CalVer version of this config file (e.g. {@code 2025.04.01}). */
+    @Schema(description = "CalVer version of this config (YYYY.MM.DD)", example = "2025.04.01")
     private String version;
 
     /**
-     * The date from which this config becomes active. The scheduler evaluates this
-     * nightly to determine the current live version.
+     * The date and time (NZT) from which this config becomes the active version.
+     *
+     * <p>The scheduler re-evaluates every minute — a config with
+     * {@code effectiveFrom: "2025-07-01T09:00:00"} activates within one minute
+     * of 9:00 am NZT on 1 July 2025, with no deployment or manual step required.
+     * Use midnight ({@code T00:00:00}) when time-of-day precision is not needed.
+     *
+     * <p>All values are interpreted as NZT (Pacific/Auckland).
      */
-    @Schema(description = "Date from which this config version becomes active", example = "2025-04-01")
-    private LocalDate effectiveFrom;
+    @Schema(description = "NZT date-time from which this config becomes active — scheduler checks every minute",
+            example = "2025-04-01T00:00:00")
+    private LocalDateTime effectiveFrom;
 
     /** ISO-8601 timestamp of when this config file was published. */
     @Schema(description = "ISO-8601 timestamp of when this config was published", example = "2025-04-01T00:00:00Z")

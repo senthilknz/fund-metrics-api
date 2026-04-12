@@ -67,13 +67,14 @@ end note
 ' ─────────────────────────────────────────────
 == Every Midnight NZT (automatic activation) ==
 
-SCH  ->  SVC : @Scheduled(cron="0 0 0 * * *", zone="Pacific/Auckland")\nrefreshActiveConfig()
-SVC  ->  SVC : re-evaluate: latest where effectiveFrom ≤ today (NZT)
-SVC  ->  SVC : activeConfig = funds-config-2025.07.01\n(if effectiveFrom date has arrived)
+SCH  ->  SVC : @Scheduled(cron="0 * * * * *", zone="Pacific/Auckland")\nrefreshActiveConfig() — every minute
+SVC  ->  SVC : re-evaluate: latest where effectiveFrom ≤ LocalDateTime.now(NZT)
+SVC  ->  SVC : activeConfig = funds-config-2025.07.01\n(if effectiveFrom date-time has arrived)
 
 note over SCH, SVC
   No deployment or manual step required.
-  The new quarterly config activates automatically.
+  Activates within 1 minute of the specified NZT time.
+  Use T00:00:00 for midnight, or e.g. T09:00:00 for 9am.
 end note
 
 ' ─────────────────────────────────────────────

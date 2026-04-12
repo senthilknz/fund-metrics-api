@@ -20,6 +20,8 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -30,26 +32,27 @@ import java.util.List;
  * Manages the lifecycle of versioned fund config files embedded in the application JAR.
  *
  * <h2>How versioning works</h2>
- * <p>All {@code funds-config-v*.json} files under {@code src/main/resources/fund-configs/}
+ * <p>All {@code funds-config-*.json} files under {@code src/main/resources/fund-configs/}
  * are packaged into the JAR at build time and loaded on startup. Each file carries an
- * {@code effectiveFrom} date. The active config is always the latest version whose
- * {@code effectiveFrom} is not after today, resolved at startup and re-evaluated every
- * midnight by the scheduler.
+ * {@code effectiveFrom} date-time (NZT). The active config is always the latest version
+ * whose {@code effectiveFrom} is not after now (NZT), resolved at startup and re-evaluated
+ * every minute by the scheduler.
  *
  * <h2>Quarterly update operational workflow</h2>
  * <ol>
- *   <li>Add {@code funds-config-v3.json} with {@code "effectiveFrom": "2025-07-01"} and
- *       the new return figures.</li>
- *   <li>Commit and push — the pipeline builds and deploys the new JAR to OpenShift.
+ *   <li>Add {@code funds-config-2025.07.01.json} with
+ *       {@code "effectiveFrom": "2025-07-01T00:00:00"} (or a specific time, e.g.
+ *       {@code "2025-07-01T09:00:00"}) and the new return figures.</li>
+ *   <li>Commit and push — the pipeline builds and deploys the new JAR.
  *       This can be done weeks in advance of the activation date.</li>
- *   <li>The app runs normally, still serving v2 data.</li>
- *   <li>On 1 July, the midnight scheduler automatically activates v3 — no further
- *       deployment, no manual intervention required.</li>
+ *   <li>The app runs normally, still serving the previous version.</li>
+ *   <li>At the specified NZT date-time, the minute scheduler automatically activates
+ *       the new version — no further deployment, no manual intervention required.</li>
  * </ol>
  *
  * <h2>Emergency override</h2>
  * <p>{@link #forceActivateVersion(String)} overrides the active config in memory without
- * redeployment. Resets on the next restart or midnight tick.
+ * redeployment. Resets on the next restart or scheduler tick.
  */
 @Slf4j
 @Service
@@ -111,17 +114,18 @@ public class FundConfigService {
     }
 
     /**
-     * Re-evaluates which config version should be active based on today's date.
-     * Selects the latest config whose {@code effectiveFrom} is not after today.
+     * Re-evaluates which config version should be active based on the current NZT date-time.
+     * Selects the latest config whose {@code effectiveFrom} is not after now (NZT).
      *
-     * <p>Runs automatically at midnight so a version deployed in advance (with a future
-     * {@code effectiveFrom}) activates on the correct date without any further deployment.
+     * <p>Runs every minute so a version deployed in advance (with a future
+     * {@code effectiveFrom}) activates within one minute of the specified NZT date-time,
+     * with no further deployment or manual intervention required.
      */
-    @Scheduled(cron = "0 0 0 * * *", zone = "Pacific/Auckland")
+    @Scheduled(cron = "0 * * * * *", zone = "Pacific/Auckland")
     public void refreshActiveConfig() {
-        LocalDate today = LocalDate.now(NZT);
+        LocalDateTime now = LocalDateTime.now(NZT);
         FundConfig resolved = configHistory.stream()
-                .filter(c -> !c.getEffectiveFrom().isAfter(today))
+                .filter(c -> !c.getEffectiveFrom().isAfter(now))
                 .reduce((first, second) -> second)
                 .orElse(null);
 
@@ -129,7 +133,7 @@ public class FundConfigService {
             this.activeConfig = resolved;
             log.info("Active fund config refreshed: version={} effectiveFrom={}", resolved.getVersion(), resolved.getEffectiveFrom());
         } else {
-            log.warn("No fund config is effective as of today ({})", today);
+            log.warn("No fund config is effective as of now ({})", now);
         }
     }
 
@@ -156,12 +160,18 @@ public class FundConfigService {
      * Resolves the config that would be active on the given date without modifying
      * the live active config. Safe to call for preview/QA purposes.
      *
-     * @param date the hypothetical date to evaluate
+     * <p>The date is interpreted as the full calendar day in NZT: any config whose
+     * {@code effectiveFrom} falls on or before 23:59:59 of the given date is eligible.
+     * For example, a config with {@code effectiveFrom: "2025-07-01T09:00:00"} is correctly
+     * returned when previewing {@code 2025-07-01}.
+     *
+     * @param date the hypothetical date to evaluate (interpreted as NZT end-of-day)
      * @return the {@link FundConfig} effective on that date, or {@code null} if none applies
      */
     public FundConfig resolveConfigForDate(LocalDate date) {
+        LocalDateTime endOfDay = date.atTime(LocalTime.MAX);
         return configHistory.stream()
-                .filter(c -> !c.getEffectiveFrom().isAfter(date))
+                .filter(c -> !c.getEffectiveFrom().isAfter(endOfDay))
                 .reduce((first, second) -> second)
                 .orElse(null);
     }

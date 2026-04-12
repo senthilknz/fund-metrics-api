@@ -10,6 +10,7 @@ import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -41,7 +42,7 @@ class FundConfigServiceEdgeCaseTest {
         String validJson = """
                 {
                   "version": "1.0.0",
-                  "effectiveFrom": "2025-01-01",
+                  "effectiveFrom": "2025-01-01T00:00:00",
                   "publishedAt": "2025-01-01T00:00:00Z",
                   "performanceAsOf": "2024-12-31",
                   "dataSource": "Active Series",
@@ -104,7 +105,7 @@ class FundConfigServiceEdgeCaseTest {
         // Inject a config with a far-future effectiveFrom
         FundConfig futureConfig = new FundConfig();
         futureConfig.setVersion("99.0.0");
-        futureConfig.setEffectiveFrom(LocalDate.of(2099, 1, 1));
+        futureConfig.setEffectiveFrom(LocalDateTime.of(2099, 1, 1, 0, 0));
         ReflectionTestUtils.setField(service, "configHistory", List.of(futureConfig));
 
         service.refreshActiveConfig();
@@ -126,7 +127,7 @@ class FundConfigServiceEdgeCaseTest {
 
         FundConfig config = new FundConfig();
         config.setVersion("1.0.0");
-        config.setEffectiveFrom(LocalDate.of(2025, 1, 1));
+        config.setEffectiveFrom(LocalDateTime.of(2025, 1, 1, 0, 0));
         ReflectionTestUtils.setField(service, "configHistory", List.of(config));
 
         FundConfig result = service.resolveConfigForDate(LocalDate.of(2025, 1, 1));
@@ -144,7 +145,7 @@ class FundConfigServiceEdgeCaseTest {
 
         FundConfig config = new FundConfig();
         config.setVersion("1.0.0");
-        config.setEffectiveFrom(LocalDate.of(2025, 1, 1));
+        config.setEffectiveFrom(LocalDateTime.of(2025, 1, 1, 0, 0));
         ReflectionTestUtils.setField(service, "configHistory", List.of(config));
 
         FundConfig result = service.resolveConfigForDate(LocalDate.of(2024, 12, 31));
