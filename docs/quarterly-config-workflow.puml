@@ -76,22 +76,23 @@ DEV ->  DEV : Create feature branch\n<font color="#2C5F8A">git checkout -b featu
 ' ─────────────────────────────────────────────
 == Phase 2 · Development ==
 
-DEV ->  DEV : Add <b>funds-config-v3.json</b>\nSet version, effectiveFrom, returns
+DEV ->  DEV : Add <b>funds-config-2025.07.01.json</b>\nSet version, effectiveFrom, returns
 
 note right of DEV #FFFDE7
   <b>Fields to update in the new file:</b>
-  • version        → "3.0.0"
-  • effectiveFrom  → "2025-07-01"
-  • publishedAt    → today's timestamp
-  • performanceAsOf→ last day of prev quarter
-  • funds[*].returns → new figures from FM
+  • version         → "2025.07.01"  (CalVer: YYYY.MM.DD)
+  • effectiveFrom   → "2025-07-01"
+  • publishedAt     → today's timestamp
+  • performanceAsOf → last day of prev quarter
+  • funds[*].returns.values → new figures from FM
+  • funds[*].returns.tooltip → update date reference
   ────────────────────────────────────────
   <b>Do NOT modify or delete existing files.</b>
   They form the audit history.
 end note
 
 DEV ->  DEV : Verify locally
-DEV ->  DEV : <font color="#2C5F8A">./mvnw test</font>\n<font color="#2C5F8A">curl /api/v1/funds/history</font>\n<font color="#2C5F8A">curl /api/v1/funds/preview?date=2025-07-01</font>\n<font color="#2C5F8A">curl /api/v1/funds/chooser</font> → new figures in chooser response?
+DEV ->  DEV : <font color="#2C5F8A">./mvnw test</font>\n<font color="#2C5F8A">curl /api/v1/funds/history</font>  → 2025.07.01 present?\n<font color="#2C5F8A">curl /api/v1/funds/preview?date=2025-07-01</font>  → figures correct?\n<font color="#2C5F8A">curl /api/v1/funds/chooser</font>  → new figures in chooser response?
 
 DEV ->  GIT : Push branch
 
@@ -100,7 +101,7 @@ DEV ->  GIT : Push branch
 ' ─────────────────────────────────────────────
 == Phase 3 · Pull Request ==
 
-DEV ->  GIT : Open Pull Request\n<i>Include FM sign-off on figures in description</i>
+DEV ->  GIT : Open Pull Request\n<i>Include FM sign-off on figures + effectiveFrom date in description</i>
 GIT ->  DEV : Peer review & approval
 DEV ->  GIT : Merge to <b>master</b>
 
@@ -114,7 +115,8 @@ CB  ->  CB : <font color="#2C5F8A">./mvnw package</font> + run all tests
 CB  ->  SP : Publish build artefact\n+ create Spinnaker task
 
 note over CB, SP #FFFDE7
-  The new config file is embedded in the JAR.
+  The new config file (funds-config-2025.07.01.json)
+  is embedded in the JAR at build time.
   Tests confirm the new version loads and the
   effectiveFrom date resolves correctly.
 end note
@@ -127,7 +129,7 @@ end note
 DEV  ->  SP   : Trigger SYST pipeline
 SP   ->  SYST : Rolling deploy (zero downtime)
 
-DEV  ->  SYST : <font color="#2C5F8A">GET /api/v1/funds/history</font>\n→ v3 present?
+DEV  ->  SYST : <font color="#2C5F8A">GET /api/v1/funds/history</font>\n→ 2025.07.01 present?
 DEV  ->  SYST : <font color="#2C5F8A">GET /api/v1/funds/preview?date=2025-07-01</font>\n→ figures correct?
 DEV  ->  SYST : <font color="#2C5F8A">GET /api/v1/funds</font>\n→ still serving previous version?
 DEV  ->  SYST : <font color="#2C5F8A">GET /api/v1/funds/chooser</font>\n→ fee, return, timeframe, risk all correct?
@@ -173,8 +175,8 @@ end note
 DEV  ->  SP   : Trigger Prod pipeline
 SP   ->  PROD : Rolling deploy (zero downtime)
 
-DEV  ->  PROD : <font color="#2C5F8A">GET /api/v1/funds/history</font> → v3 present?
-DEV  ->  PROD : <font color="#2C5F8A">GET /api/v1/funds</font> → still serving v2?
+DEV  ->  PROD : <font color="#2C5F8A">GET /api/v1/funds/history</font> → 2025.07.01 present?
+DEV  ->  PROD : <font color="#2C5F8A">GET /api/v1/funds</font> → still serving 2025.04.01?
 DEV  ->  PROD : <font color="#2C5F8A">GET /api/v1/funds/chooser</font> → still showing previous figures?
 
 note right of PROD #FFFDE7
@@ -188,15 +190,15 @@ end note
 ' ─────────────────────────────────────────────
 == Phase 9 · Automatic Activation (no manual step) ==
 
-SCH  ->  PROD : Midnight on 2025-07-01\nScheduler fires <b>refreshActiveConfig()</b>
-PROD ->  PROD : v3 becomes active
+SCH  ->  PROD : Midnight NZT on 2025-07-01\nScheduler fires <b>refreshActiveConfig()</b>
+PROD ->  PROD : 2025.07.01 becomes active
 
 note over SCH, PROD #D5F5E3
   <b>No deployment. No manual intervention. No on-call required.</b>
   ────────────────────────────────────────────────────────────────
   Full config endpoint (ETag/304 caching):
-    Micro frontend sends:  GET /api/v1/funds  If-None-Match: "2.0.0"
-    API responds:          200  ETag: "3.0.0"  [new fund data]
+    Micro frontend sends:  GET /api/v1/funds  If-None-Match: "2025.04.01"
+    API responds:          200  ETag: "2025.07.01"  [new fund data]
     Subsequent calls:      304 Not Modified  (until next quarterly update)
   ────────────────────────────────────────────────────────────────
   Chooser endpoint (always 200, BFF shaped for fund selection page):

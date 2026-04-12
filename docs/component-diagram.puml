@@ -1,0 +1,144 @@
+@startuml component-diagram
+title Fund Metrics API — Component Diagram
+
+skinparam backgroundColor #F8F9FA
+skinparam defaultFontName Arial
+skinparam defaultFontSize 13
+skinparam roundcorner 10
+skinparam shadowing false
+skinparam ArrowThickness 1.5
+skinparam ArrowColor #2C5F8A
+
+skinparam component {
+  BackgroundColor #D6EAF8
+  BorderColor     #2C5F8A
+  FontColor       #1A3A5C
+  FontStyle       Bold
+}
+
+skinparam database {
+  BackgroundColor #FFF9C4
+  BorderColor     #F9A825
+  FontColor       #5D4037
+}
+
+skinparam package {
+  BackgroundColor #F0F4F8
+  BorderColor     #90CAF9
+  FontColor       #1565C0
+  FontStyle       Bold
+}
+
+skinparam note {
+  BackgroundColor #FFFDE7
+  BorderColor     #F9A825
+  FontColor       #5D4037
+  FontSize        12
+}
+
+skinparam actor {
+  BackgroundColor #D5F5E3
+  BorderColor     #1A6B3A
+  FontColor       #1A3A1A
+  FontStyle       Bold
+}
+
+' ─────────────────────────────────────────────
+'  External actors
+' ─────────────────────────────────────────────
+actor "Micro Frontend\n(React / Next.js)" as MFE
+actor "Ops / Developer"                   as OPS
+
+' ─────────────────────────────────────────────
+'  Spring Boot Application
+' ─────────────────────────────────────────────
+package "Spring Boot Application (fund-metrics-api)" {
+
+  package "Web Layer" #EBF4FB {
+    [FundController] as CTRL
+    note right of CTRL
+      GET  /api/v1/funds
+      GET  /api/v1/funds/chooser
+      GET  /api/v1/funds/history
+      GET  /api/v1/funds/preview
+      POST /api/v1/funds/activate
+    end note
+  }
+
+  package "Service Layer" #EAF4FB {
+    [FundConfigService] as SVC
+
+    note right of SVC
+      • Loads all config files at startup
+      • Selects active config by effectiveFrom ≤ today (NZT)
+      • Refreshes active config every midnight NZT
+      • Maps active config → chooser response (BFF)
+      • forceActivateVersion() for emergency rollback
+    end note
+  }
+
+  package "Model" #F0F4F8 {
+    [FundConfig]         as FCONFIG
+    [Fund]               as FUND
+    [FundReturns]        as FRETURNS
+    [RiskIndicator]      as RISK
+    [MetricDescription]  as MD
+    [FooterNote]         as FN
+    [FundChooserResponse] as CHOOSER
+    [FundChooserItem]    as CITEM
+  }
+
+  package "Config Files (classpath)" #FFF9C4 {
+    database "funds-config-2025.04.01.json" as CFG1
+    database "funds-config-2025.07.01.json\n(future quarter)" as CFG2
+  }
+
+  package "Infrastructure" #F0FFF4 {
+    [RequestResponseLoggingFilter] as LOG
+    [CorsConfig]                   as CORS
+    [OpenApiConfig]                as OAS
+    [Scheduled midnight tick\n(refreshActiveConfig)] as SCHED
+  }
+}
+
+' ─────────────────────────────────────────────
+'  Relationships
+' ─────────────────────────────────────────────
+
+MFE  -->  LOG    : HTTP request\n/api/v1/funds/**
+LOG  -->  CTRL   : filtered request
+CTRL -->  SVC    : getActiveConfig()\ntoChooserResponse()\ngetHistory()\nresolveConfigForDate()\nforceActivateVersion()
+SVC  -->  FCONFIG : reads / holds active config
+SVC  -->  CHOOSER : builds (BFF mapping)
+FCONFIG --> FUND
+FUND --> FRETURNS
+FUND --> RISK
+FCONFIG --> MD
+FCONFIG --> FN
+CHOOSER --> CITEM
+
+SVC  ..>  CFG1   : loads at startup
+SVC  ..>  CFG2   : loads at startup
+SCHED --> SVC    : triggers refreshActiveConfig()\nevery midnight NZT
+
+OPS  -->  CTRL   : POST /api/v1/funds/activate\n(emergency rollback)
+
+CTRL --> OAS : documented by
+CORS --> CTRL : applies CORS headers\nfor /api/**
+
+note bottom of CFG1
+  All .json files under
+  classpath:fund-configs/
+  are packaged into the JAR
+  at build time.
+  New quarters = new file,
+  existing files never modified.
+end note
+
+note bottom of SVC
+  activeConfig is volatile —
+  safe for concurrent reads
+  without synchronisation overhead.
+end note
+
+@enduml

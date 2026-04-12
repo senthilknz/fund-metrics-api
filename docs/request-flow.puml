@@ -1,0 +1,181 @@
+@startuml request-flow
+title Fund Metrics API — Runtime Request Flow
+
+skinparam backgroundColor #F8F9FA
+skinparam defaultFontName Arial
+skinparam defaultFontSize 13
+skinparam roundcorner 8
+skinparam shadowing false
+skinparam ArrowThickness 1.5
+
+skinparam sequence {
+  ArrowColor              #2C5F8A
+  LifeLineBorderColor     #AACCE0
+  LifeLineBackgroundColor #EBF4FB
+
+  ParticipantBorderColor     #2C5F8A
+  ParticipantBackgroundColor #D6EAF8
+  ParticipantFontColor       #1A3A5C
+  ParticipantFontStyle       Bold
+
+  ActorBorderColor     #1A6B3A
+  ActorBackgroundColor #D5F5E3
+  ActorFontColor       #1A3A1A
+  ActorFontStyle       Bold
+
+  NoteBackgroundColor #FFFDE7
+  NoteBorderColor     #F9A825
+  NoteFontColor       #5D4037
+  NoteFontSize        12
+
+  DividerBackgroundColor #E3F2FD
+  DividerBorderColor     #90CAF9
+  DividerFontColor       #1565C0
+  DividerFontStyle       Bold
+  DividerFontSize        13
+
+  GroupBorderColor     #7B1FA2
+  GroupFontColor       #7B1FA2
+  GroupBodyBackgroundColor #F9F0FF
+}
+
+actor  "Micro Frontend"      as MFE
+participant "Logging Filter"  as LOG
+participant "FundController"  as CTRL
+participant "FundConfigService" as SVC
+participant "Config Files\n(classpath JAR)" as CFG
+participant "Midnight\nScheduler" as SCH
+
+' ─────────────────────────────────────────────
+'  Startup
+' ─────────────────────────────────────────────
+== Application Startup ==
+
+CFG  ->  SVC : @PostConstruct — loadAllConfigs()\nscans classpath:fund-configs/*.json
+SVC  ->  SVC : parse + sort by effectiveFrom
+SVC  ->  SVC : refreshActiveConfig()\nselect latest where effectiveFrom ≤ today (NZT)
+SVC  ->  SVC : activeConfig = funds-config-2025.04.01
+
+note over SVC
+  activeConfig is volatile.
+  All subsequent reads are safe
+  without synchronisation overhead.
+end note
+
+' ─────────────────────────────────────────────
+'  Midnight tick
+' ─────────────────────────────────────────────
+== Every Midnight NZT (automatic activation) ==
+
+SCH  ->  SVC : @Scheduled(cron="0 0 0 * * *", zone="Pacific/Auckland")\nrefreshActiveConfig()
+SVC  ->  SVC : re-evaluate: latest where effectiveFrom ≤ today (NZT)
+SVC  ->  SVC : activeConfig = funds-config-2025.07.01\n(if effectiveFrom date has arrived)
+
+note over SCH, SVC
+  No deployment or manual step required.
+  The new quarterly config activates automatically.
+end note
+
+' ─────────────────────────────────────────────
+'  GET /api/v1/funds — first request (cache miss)
+' ─────────────────────────────────────────────
+== GET /api/v1/funds — first request (no cached ETag) ==
+
+MFE  ->  LOG  : GET /api/v1/funds
+LOG  ->  CTRL : forward (logs method, path, query)
+CTRL ->  SVC  : getActiveConfig()
+SVC  ->  CTRL : FundConfig (version="2025.04.01")
+CTRL ->  CTRL : ETag = "2025.04.01"\nLast-Modified = publishedAt
+CTRL ->  LOG  : 200 OK  ETag: "2025.04.01"\nCache-Control: no-cache, must-revalidate
+LOG  ->  MFE  : 200 OK + full config body (logs status, duration)
+
+note over MFE
+  Browser stores ETag "2025.04.01"
+  for subsequent conditional requests.
+end note
+
+' ─────────────────────────────────────────────
+'  GET /api/v1/funds — subsequent request (304)
+' ─────────────────────────────────────────────
+== GET /api/v1/funds — subsequent request (ETag matches → 304) ==
+
+MFE  ->  LOG  : GET /api/v1/funds\nIf-None-Match: "2025.04.01"
+LOG  ->  CTRL : forward
+CTRL ->  SVC  : getActiveConfig()
+SVC  ->  CTRL : FundConfig (version="2025.04.01")
+CTRL ->  CTRL : checkNotModified("2025.04.01") → true
+CTRL ->  LOG  : 304 Not Modified (no body)
+LOG  ->  MFE  : 304 Not Modified
+
+note over MFE, LOG
+  Zero bandwidth — no body sent.
+  Browser uses its cached response.
+end note
+
+' ─────────────────────────────────────────────
+'  GET /api/v1/funds — after new version activates
+' ─────────────────────────────────────────────
+== GET /api/v1/funds — after midnight activation (ETag mismatch → 200) ==
+
+MFE  ->  LOG  : GET /api/v1/funds\nIf-None-Match: "2025.04.01"
+LOG  ->  CTRL : forward
+CTRL ->  SVC  : getActiveConfig()
+SVC  ->  CTRL : FundConfig (version="2025.07.01")
+CTRL ->  CTRL : checkNotModified("2025.07.01") → false\n(client ETag was "2025.04.01")
+CTRL ->  LOG  : 200 OK  ETag: "2025.07.01"\n+ new fund data
+LOG  ->  MFE  : 200 OK + full updated config body
+
+' ─────────────────────────────────────────────
+'  GET /api/v1/funds/chooser
+' ─────────────────────────────────────────────
+== GET /api/v1/funds/chooser ==
+
+MFE  ->  LOG  : GET /api/v1/funds/chooser
+LOG  ->  CTRL : forward
+CTRL ->  SVC  : toChooserResponse()
+SVC  ->  SVC  : map activeConfig → FundChooserResponse\n(BFF: one return period, labels + tooltips co-located)
+SVC  ->  CTRL : FundChooserResponse
+CTRL ->  LOG  : 200 OK + chooser body
+LOG  ->  MFE  : 200 OK\n{disclaimer, footerNotes, funds[fee, return, timeframe, risk]}
+
+note over SVC
+  Each fund's return values, tooltip,
+  and riskIndicator tooltip are read
+  directly from the per-fund config.
+  No hardcoded strings in service code.
+end note
+
+' ─────────────────────────────────────────────
+'  GET /api/v1/funds/preview
+' ─────────────────────────────────────────────
+== GET /api/v1/funds/preview?date=2025-07-01 ==
+
+MFE  ->  LOG  : GET /api/v1/funds/preview?date=2025-07-01
+LOG  ->  CTRL : forward
+CTRL ->  SVC  : resolveConfigForDate(2025-07-01)
+SVC  ->  SVC  : latest config where effectiveFrom ≤ 2025-07-01
+SVC  ->  CTRL : FundConfig (version="2025.07.01")
+CTRL ->  LOG  : 200 OK + future config body
+LOG  ->  MFE  : 200 OK (activeConfig unchanged — preview only)
+
+' ─────────────────────────────────────────────
+'  Emergency rollback
+' ─────────────────────────────────────────────
+== POST /api/v1/funds/activate?version=2025.04.01 (emergency rollback) ==
+
+MFE  ->  LOG  : POST /api/v1/funds/activate?version=2025.04.01
+LOG  ->  CTRL : forward
+CTRL ->  SVC  : forceActivateVersion("2025.04.01")
+SVC  ->  SVC  : activeConfig = funds-config-2025.04.01\n(in-memory override)
+SVC  ->  CTRL : true
+CTRL ->  LOG  : 200 OK  { "success": true }
+LOG  ->  MFE  : 200 OK
+
+note over SVC
+  Override resets on next restart
+  or midnight scheduler tick.
+  Use only as a stopgap — deploy
+  a corrected config file promptly.
+end note
+
+@enduml
